@@ -12,6 +12,10 @@ interface MapDashboardScreenProps {
   selectedGigId?: string;
   isOnline?: boolean;
   onToggleOnline?: () => void;
+  onOpenProfile?: () => void;
+  onOpenEarnings?: () => void;
+  earningsToday?: string;
+  hasBottomNav?: boolean;
 }
 
 export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
@@ -20,8 +24,12 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
   selectedGigId,
   isOnline: controlledOnline,
   onToggleOnline,
+  onOpenProfile,
+  onOpenEarnings,
+  earningsToday = 'R$ 150,00',
+  hasBottomNav = false,
 }) => {
-  const [internalOnline, setInternalOnline] = useState(false);
+  const [internalOnline, setInternalOnline] = useState(true);
   const isOnline = controlledOnline !== undefined ? controlledOnline : internalOnline;
 
   const handleToggle = () => {
@@ -58,13 +66,17 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
 
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 pt-1">
-          {/* User Profile Avatar with Online/Offline tag */}
-          <div className="flex items-center gap-2">
+          {/* User Profile Avatar with Online/Offline tag - clicável para ir ao perfil */}
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className="flex items-center gap-2 group cursor-pointer text-left"
+          >
             <div className="relative">
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
                 alt="Perfil"
-                className="w-10 h-10 rounded-full object-cover border-2 border-[#00E676] shadow-[0_0_10px_rgba(0,230,118,0.4)]"
+                className="w-10 h-10 rounded-full object-cover border-2 border-[#00E676] shadow-[0_0_10px_rgba(0,230,118,0.4)] transition-transform group-hover:scale-105"
               />
               <span
                 className={`absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full border ${
@@ -76,10 +88,14 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
                 {isOnline ? 'ONLINE' : 'OFFLINE'}
               </span>
             </div>
-          </div>
+          </button>
 
-          {/* Earnings Card */}
-          <div className="flex items-center gap-2.5 bg-[#141519]/90 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2 shadow-lg">
+          {/* Earnings Card - clicável para ver ganhos / perfil */}
+          <button
+            type="button"
+            onClick={onOpenEarnings || onOpenProfile}
+            className="flex items-center gap-2.5 bg-[#141519]/90 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2 shadow-lg hover:border-[#00E676]/40 transition-colors cursor-pointer"
+          >
             <div className="w-7 h-7 rounded-xl bg-[#00E676]/10 border border-[#00E676]/30 flex items-center justify-center text-[#00E676]">
               <Wallet className="w-3.5 h-3.5" />
             </div>
@@ -88,16 +104,16 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
                 Ganhos Hoje
               </span>
               <span className="text-xs font-black text-white tracking-tight mt-0.5">
-                R$ 150,00
+                {earningsToday}
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
       {/* Bottom Floating Control Panel */}
-      <div className="relative z-20 px-4 pb-2">
-        <div className="bg-[#141519]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl flex flex-col gap-4">
+      <div className={`relative z-20 px-4 ${hasBottomNav ? 'pb-20' : 'pb-2'}`}>
+        <div className="bg-[#141519]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-2xl flex flex-col gap-3.5">
           {/* Status Row */}
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center">
@@ -116,13 +132,13 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
               </h3>
               <p className="text-xs text-zinc-400">
                 {isOnline
-                  ? 'Buscando novos turnos prioritários...'
-                  : `${gigs.length} vagas ativas perto de você agora.`}
+                  ? `${gigs.length} vagas disponíveis perto de você. Toque em um card no mapa para ver.`
+                  : 'Fique online para receber ofertas de turnos.'}
               </p>
             </div>
           </div>
 
-          {/* Ficar Online Button */}
+          {/* Ficar Online / Offline Button */}
           <PrimaryButton
             onClick={handleToggle}
             variant={isOnline ? 'dark' : 'neon'}
@@ -132,8 +148,7 @@ export const MapDashboardScreen: React.FC<MapDashboardScreenProps> = ({
           </PrimaryButton>
         </div>
 
-        {/* Bottom indicator */}
-        <HomeIndicator />
+        {!hasBottomNav && <HomeIndicator />}
       </div>
     </div>
   );

@@ -23,4 +23,13 @@ export interface GigOffer {
   active: boolean;
 }
 
-export type ScreenType = 'login-screen' | 'cadastro-screen' | 'map-dashboard' | 'gig-offer-bottom-sheet';
+export type ScreenType = 
+  | 'login-screen' 
+  | 'cadastro-screen' 
+  | 'map-dashboard' 
+  | 'gig-offer-bottom-sheet'
+  | 'profile-screen'
+  | 'settings-screen'
+  | 'active-gig-screen';
+
+export type NavTab = 'map' | 'earnings' | 'profile';

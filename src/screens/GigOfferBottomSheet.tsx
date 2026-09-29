@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, ShieldAlert, Sparkles, MapPin } from 'lucide-react';
+import { Star, ShieldAlert, Sparkles, MapPin, X } from 'lucide-react';
 import { PrimaryButton } from '../components/ui/PrimaryButton';
 import { HomeIndicator } from '../components/ui/HomeIndicator';
 import { StatusBar } from '../components/ui/StatusBar';
@@ -19,6 +19,7 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
   allGigs,
   onAccept,
   onDecline,
+  onClose,
 }) => {
   return (
     <div className="w-full h-full min-h-[720px] bg-[#0A0B0E] text-white flex flex-col justify-between relative overflow-hidden select-none">
@@ -31,7 +32,10 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
           isOnline={true}
         />
         {/* Dim overlay behind sheet */}
-        <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" />
+        <div
+          onClick={onClose || (() => onDecline(gig))}
+          className="absolute inset-0 bg-black/60 backdrop-blur-[2px] cursor-pointer"
+        />
       </div>
 
       {/* Top Floating Controls */}
@@ -48,19 +52,17 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
 
         {/* Top Header Bar */}
         <div className="flex items-center justify-between px-5 pt-1">
-          {/* User Profile Avatar with Online/Offline tag */}
           <div className="relative">
             <img
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
               alt="Perfil"
               className="w-10 h-10 rounded-full object-cover border-2 border-[#00E676] shadow-[0_0_10px_rgba(0,230,118,0.4)]"
             />
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full bg-[#18191D] text-zinc-400 border border-zinc-700">
-              OFFLINE
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full bg-[#00E676] text-black">
+              ONLINE
             </span>
           </div>
 
-          {/* Earnings Card */}
           <div className="flex items-center gap-2.5 bg-[#141519]/90 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2">
             <div className="w-7 h-7 rounded-xl bg-[#00E676]/10 border border-[#00E676]/30 flex items-center justify-center text-[#00E676]">
               <Sparkles className="w-3.5 h-3.5" />
@@ -79,9 +81,19 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
 
       {/* Bottom Sheet Modal Container */}
       <div className="relative z-20 mt-auto">
-        <div className="bg-[#141519]/98 backdrop-blur-2xl border-t border-white/10 rounded-t-[32px] px-6 pt-3 pb-4 shadow-[0_-12px_40px_rgba(0,0,0,0.85)] flex flex-col gap-4">
-          {/* Sheet Handle */}
-          <div className="w-12 h-1.5 bg-zinc-700/80 rounded-full mx-auto -mt-0.5 mb-1" />
+        <div className="bg-[#141519]/98 backdrop-blur-2xl border-t border-white/10 rounded-t-[32px] px-6 pt-3 pb-4 shadow-[0_-12px_40px_rgba(0,0,0,0.85)] flex flex-col gap-3.5">
+          {/* Sheet Handle + Fechar */}
+          <div className="flex items-center justify-between -mt-1 mb-0.5">
+            <div className="w-6" />
+            <div className="w-12 h-1.5 bg-zinc-700/80 rounded-full" />
+            <button
+              type="button"
+              onClick={onClose || (() => onDecline(gig))}
+              className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           {/* Badges / Tags */}
           <div className="flex items-center gap-2.5">
@@ -109,7 +121,7 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
           </div>
 
           {/* Rate & Shift Grid */}
-          <div className="bg-[#1A1C22]/80 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-[#1A1C22]/80 border border-white/5 rounded-2xl p-3.5 flex items-center justify-between">
             {/* Valor do Turno */}
             <div className="flex flex-col">
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
@@ -138,7 +150,7 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
           </div>
 
           {/* Speckit Microtraining Card */}
-          <div className="bg-[#181B20] border border-white/5 rounded-2xl p-3.5 text-left flex flex-col gap-2">
+          <div className="bg-[#181B20] border border-white/5 rounded-2xl p-3 text-left flex flex-col gap-1.5">
             {/* Header Badge */}
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-md bg-[#00E676]/15 border border-[#00E676]/40 flex items-center justify-center text-[#00E676]">
@@ -161,15 +173,15 @@ export const GigOfferBottomSheet: React.FC<GigOfferBottomSheetProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-2 pt-1">
+          <div className="flex flex-col gap-2 pt-0.5">
             <PrimaryButton onClick={() => onAccept(gig)}>
-              ACEITAR TAXA (R$ {gig.rate})
+              ACEITAR TAXA ({gig.rateFormatted})
             </PrimaryButton>
 
             <button
               type="button"
               onClick={() => onDecline(gig)}
-              className="w-full py-2.5 text-xs text-zinc-400 hover:text-white font-medium transition-colors cursor-pointer"
+              className="w-full py-2 text-xs text-zinc-400 hover:text-white font-medium transition-colors cursor-pointer"
             >
               Recusar Proposta
             </button>

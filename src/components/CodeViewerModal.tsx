@@ -3,359 +3,423 @@ import { Copy, Check, Code, FileCode2 } from 'lucide-react';
 
 interface CodeFile {
   name: string;
-  category: 'Screens' | 'UI Components' | 'Map Components' | 'Types';
+  category: 'Novos Componentes (Expansão)' | 'Telas Originais' | 'Componentes Base';
   code: string;
 }
 
 const codeSnippets: CodeFile[] = [
   {
-    name: 'PrimaryButton.tsx',
-    category: 'UI Components',
+    name: 'BottomNavigation.tsx',
+    category: 'Novos Componentes (Expansão)',
     code: `import React from 'react';
+import { Map, Wallet, User } from 'lucide-react';
+import { NavTab } from '../../types';
 
-interface PrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
-  icon?: React.ReactNode;
-  variant?: 'neon' | 'dark' | 'ghost' | 'danger';
-  fullWidth?: boolean;
+interface BottomNavigationProps {
+  activeTab: NavTab;
+  onTabChange: (tab: NavTab) => void;
+  className?: string;
 }
 
-export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
-  children,
-  icon,
-  variant = 'neon',
-  fullWidth = true,
+export const BottomNavigation: React.FC<BottomNavigationProps> = ({
+  activeTab,
+  onTabChange,
   className = '',
-  disabled,
-  ...props
 }) => {
-  const baseStyles = 'relative flex items-center justify-center font-bold tracking-wide transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none select-none text-sm';
-  
-  const variantStyles = {
-    neon: 'bg-[#00E676] hover:bg-[#00FF77] text-black font-extrabold shadow-[0_4px_20px_rgba(0,230,118,0.35)] hover:shadow-[0_6px_28px_rgba(0,230,118,0.5)] rounded-2xl py-4 px-6 border border-[#52ff9e]/40',
-    dark: 'bg-[#1C1C1E] hover:bg-[#252528] text-white border border-white/10 rounded-2xl py-4 px-6 shadow-sm',
-    ghost: 'bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white rounded-2xl py-3 px-6',
-    danger: 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-2xl py-4 px-6'
-  };
+  const tabs = [
+    { id: 'map' as NavTab, label: 'Mapa', icon: Map },
+    { id: 'earnings' as NavTab, label: 'Ganhos', icon: Wallet },
+    { id: 'profile' as NavTab, label: 'Perfil', icon: User },
+  ];
 
   return (
-    <button
-      className={\`
-        \${baseStyles}
-        \${variantStyles[variant]}
-        \${fullWidth ? 'w-full' : ''}
-        \${className}
-      \`}
-      disabled={disabled}
-      {...props}
+    <nav
+      className={\`fixed bottom-0 left-0 right-0 z-40 bg-[#141519]/95 backdrop-blur-xl border-t border-white/10 px-6 py-2 pb-5 flex items-center justify-around shadow-[0_-8px_25px_rgba(0,0,0,0.7)] \${className}\`}
     >
-      <div className="flex items-center justify-center gap-2">
-        {icon && <span className="text-current">{icon}</span>}
-        <span className="uppercase text-[13px] tracking-wider font-extrabold">{children}</span>
-      </div>
-    </button>
-  );
-};`,
-  },
-  {
-    name: 'TextInput.tsx',
-    category: 'UI Components',
-    code: `import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
 
-interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  isPassword?: boolean;
-  maskType?: 'phone' | 'none';
-  onValueChange?: (val: string) => void;
-}
-
-export const TextInput: React.FC<TextInputProps> = ({
-  label,
-  error,
-  isPassword = false,
-  maskType = 'none',
-  value,
-  onChange,
-  onValueChange,
-  placeholder,
-  className = '',
-  type = 'text',
-  ...props
-}) => {
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Máscara de Telefone: (XX) XXXXX-XXXX
-  const formatPhone = (val: string): string => {
-    const digits = val.replace(/\\D/g, '').slice(0, 11);
-    if (!digits) return '';
-    if (digits.length <= 2) return \`(\${digits}\`;
-    if (digits.length <= 7) return \`(\${digits.slice(0, 2)}) \${digits.slice(2)}\`;
-    return \`(\${digits.slice(0, 2)}) \${digits.slice(2, 7)}-\${digits.slice(7)}\`;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let newVal = e.target.value;
-    if (maskType === 'phone') {
-      newVal = formatPhone(newVal);
-      e.target.value = newVal;
-    }
-    if (onChange) onChange(e);
-    if (onValueChange) onValueChange(newVal);
-  };
-
-  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
-
-  return (
-    <div className="w-full flex flex-col gap-1.5 text-left">
-      {label && (
-        <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-          {label}
-        </label>
-      )}
-
-      <div className="relative flex items-center">
-        <input
-          type={inputType}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          className={\`
-            w-full bg-[#18191D] text-white text-[14px] placeholder-zinc-500 rounded-xl px-4 py-3.5
-            border border-white/5 transition-all duration-200
-            focus:outline-none focus:border-[#00E676]/70 focus:ring-1 focus:ring-[#00E676]/40
-            hover:border-white/10
-            \${isPassword ? 'pr-11' : ''}
-            \${error ? 'border-red-500/80 focus:border-red-500' : ''}
-            \${className}
-          \`}
-          {...props}
-        />
-
-        {isPassword && (
+        return (
           <button
+            key={tab.id}
             type="button"
-            tabIndex={-1}
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 text-zinc-400 hover:text-white transition-colors cursor-pointer p-1"
+            onClick={() => onTabChange(tab.id)}
+            className="flex flex-col items-center justify-center gap-1 py-1 px-4 transition-all duration-200 cursor-pointer select-none group"
           >
-            {showPassword ? <EyeOff className="w-4 h-4 text-zinc-400" /> : <Eye className="w-4 h-4 text-zinc-400" />}
+            <div className="relative">
+              <Icon
+                className={\`w-5 h-5 transition-transform duration-200 group-hover:scale-110 \${
+                  isActive ? 'text-[#00E676]' : 'text-gray-500 hover:text-zinc-300'
+                }\`}
+              />
+              {isActive && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#00E676] shadow-[0_0_8px_#00E676]" />
+              )}
+            </div>
+            <span
+              className={\`text-[10px] font-semibold tracking-wider transition-colors duration-200 \${
+                isActive ? 'text-[#00E676]' : 'text-gray-500 group-hover:text-zinc-300'
+              }\`}
+            >
+              {tab.label}
+            </span>
           </button>
-        )}
-      </div>
-
-      {error && <span className="text-xs text-red-400 mt-0.5">{error}</span>}
-    </div>
+        );
+      })}
+    </nav>
   );
 };`,
   },
   {
-    name: 'ProfessionToggle.tsx',
-    category: 'UI Components',
+    name: 'ProfileScreen.tsx',
+    category: 'Novos Componentes (Expansão)',
     code: `import React from 'react';
-import { Wine, Utensils } from 'lucide-react';
-import { Profession } from '../../types';
-
-interface ProfessionToggleProps {
-  selected: Profession;
-  onChange: (profession: Profession) => void;
-}
-
-export const ProfessionToggle: React.FC<ProfessionToggleProps> = ({
-  selected,
-  onChange,
-}) => {
-  return (
-    <div className="w-full flex flex-col gap-2 text-left">
-      <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-        ESCOLHA SUA PROFISSÃO PRINCIPAL
-      </label>
-      
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => onChange('Bartender')}
-          className={\`
-            flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl border transition-all duration-200 cursor-pointer
-            \${
-              selected === 'Bartender'
-                ? 'border-[#00E676] bg-[#00E676]/10 text-[#00E676] shadow-[0_0_15px_rgba(0,230,118,0.2)]'
-                : 'border-white/5 bg-[#18191D] text-zinc-400 hover:text-zinc-200 hover:border-white/10'
-            }
-          \`}
-        >
-          <Wine className={\`w-4 h-4 \${selected === 'Bartender' ? 'text-[#00E676]' : 'text-zinc-400'}\`} />
-          <span className="text-sm font-semibold tracking-tight">Bartender</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onChange('Garçom')}
-          className={\`
-            flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl border transition-all duration-200 cursor-pointer
-            \${
-              selected === 'Garçom'
-                ? 'border-[#00E676] bg-[#00E676]/10 text-[#00E676] shadow-[0_0_15px_rgba(0,230,118,0.2)]'
-                : 'border-white/5 bg-[#18191D] text-zinc-400 hover:text-zinc-200 hover:border-white/10'
-            }
-          \`}
-        >
-          <Utensils className={\`w-4 h-4 \${selected === 'Garçom' ? 'text-[#00E676]' : 'text-zinc-400'}\`} />
-          <span className="text-sm font-semibold tracking-tight">Garçom</span>
-        </button>
-      </div>
-    </div>
-  );
-};`,
-  },
-  {
-    name: 'GigMarker.tsx',
-    category: 'Map Components',
-    code: `import React from 'react';
-import { Wine, Utensils } from 'lucide-react';
-import { GigOffer } from '../../types';
-
-interface GigMarkerProps {
-  gig: GigOffer;
-  isSelected?: boolean;
-  onClick: (gig: GigOffer) => void;
-}
-
-export const GigMarker: React.FC<GigMarkerProps> = ({
-  gig,
-  isSelected = false,
-  onClick,
-}) => {
-  return (
-    <div
-      onClick={() => onClick(gig)}
-      style={{
-        left: \`\${gig.coords.x}%\`,
-        top: \`\${gig.coords.y}%\`,
-        transform: 'translate(-50%, -50%)',
-      }}
-      className="absolute z-20 cursor-pointer group transition-all duration-300 select-none"
-    >
-      <span className="absolute -inset-1 rounded-full bg-[#00E676]/30 animate-ping opacity-40 pointer-events-none" />
-
-      <div
-        className={\`
-          flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200
-          \${
-            isSelected
-              ? 'bg-[#00E676] text-black shadow-[0_0_20px_rgba(0,230,118,0.7)] scale-110 ring-2 ring-white/40'
-              : 'bg-[#141519]/95 text-white border border-[#00E676] shadow-[0_4px_16px_rgba(0,0,0,0.6)] hover:border-[#00FF77] hover:scale-105'
-          }
-        \`}
-      >
-        <span className={\`flex items-center justify-center \${isSelected ? 'text-black' : 'text-[#00E676]'}\`}>
-          {gig.profession === 'Bartender' ? <Wine className="w-3 h-3" /> : <Utensils className="w-3 h-3" />}
-        </span>
-
-        <span className="font-semibold tracking-tight">{gig.profession}</span>
-        <span className={\`font-extrabold \${isSelected ? 'text-black' : 'text-[#00E676]'}\`}>
-          R$ {gig.rate}
-        </span>
-      </div>
-
-      <div
-        className={\`w-0 h-0 mx-auto border-l-4 border-l-transparent border-r-4 border-r-transparent \${
-          isSelected ? 'border-t-4 border-t-[#00E676]' : 'border-t-4 border-t-[#141519]'
-        }\`}
-      />
-    </div>
-  );
-};`,
-  },
-  {
-    name: 'LoginScreen.tsx',
-    category: 'Screens',
-    code: `// Tela 1: login-screen
-import React, { useState } from 'react';
-import { LogIn, Sparkles } from 'lucide-react';
+import { 
+  Star, 
+  Settings, 
+  History, 
+  HelpCircle, 
+  LogOut, 
+  ChevronRight, 
+  Award, 
+  TrendingUp, 
+  ShieldCheck 
+} from 'lucide-react';
 import { StatusBar } from '../components/ui/StatusBar';
 import { HomeIndicator } from '../components/ui/HomeIndicator';
-import { TextInput } from '../components/ui/TextInput';
-import { PrimaryButton } from '../components/ui/PrimaryButton';
-import { SocialButton } from '../components/ui/SocialButton';
 
-export const LoginScreen: React.FC = () => {
-  const [email, setEmail] = useState('freelancer@curitiba.com');
-  const [password, setPassword] = useState('••••••••');
+interface ProfileScreenProps {
+  onOpenSettings?: () => void;
+  onLogout?: () => void;
+  onViewHistory?: () => void;
+  onHelpCenter?: () => void;
+}
+
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({
+  onOpenSettings,
+  onLogout,
+  onViewHistory,
+  onHelpCenter,
+}) => {
+  return (
+    <div className="w-full h-full min-h-[720px] bg-[#0E0F12] text-white flex flex-col justify-between relative overflow-hidden select-none">
+      <StatusBar time="9:41" />
+
+      <div className="flex-1 px-5 pt-2 pb-24 overflow-y-auto space-y-5">
+        {/* Cabeçalho do Perfil */}
+        <div className="flex flex-col items-center text-center pt-2">
+          <div className="relative mb-3">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+              alt="Avatar do Freelancer"
+              className="w-24 h-24 rounded-full object-cover border-3 border-[#00E676] shadow-[0_0_20px_rgba(0,230,118,0.35)]"
+            />
+            <div className="absolute -bottom-1.5 right-1 bg-[#1C1C1E] border border-white/10 p-1.5 rounded-full shadow-md">
+              <ShieldCheck className="w-4 h-4 text-[#00E676]" />
+            </div>
+          </div>
+
+          <h2 className="text-xl font-black tracking-tight text-white">
+            Gabriel Silva
+          </h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Bartender & Garçom Pro • Curitiba, PR
+          </p>
+
+          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1C1C1E] border border-white/10 shadow-sm">
+            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+            <span className="text-xs font-black text-white">4.9</span>
+            <span className="text-[10px] text-zinc-400 font-medium">(128 avaliações)</span>
+          </div>
+        </div>
+
+        {/* Estatísticas Rápidas */}
+        <div>
+          <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2.5 px-1">
+            Estatísticas Rápidas
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  Taxas Concluídas
+                </span>
+                <div className="w-7 h-7 rounded-xl bg-[#00E676]/10 flex items-center justify-center text-[#00E676]">
+                  <Award className="w-3.5 h-3.5" />
+                </div>
+              </div>
+              <div>
+                <span className="text-2xl font-black text-white tracking-tight">84</span>
+                <span className="text-[10px] text-[#00E676] font-semibold block mt-0.5">+6 esta semana</span>
+              </div>
+            </div>
+
+            <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  Ganhos da Semana
+                </span>
+                <div className="w-7 h-7 rounded-xl bg-[#00E676]/10 flex items-center justify-center text-[#00E676]">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                </div>
+              </div>
+              <div>
+                <span className="text-2xl font-black text-[#00E676] tracking-tight">R$ 1.280</span>
+                <span className="text-[10px] text-zinc-400 font-medium block mt-0.5">Meta: R$ 1.500</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista de Menus */}
+        <div>
+          <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2.5 px-1">
+            Conta & Preferências
+          </h3>
+          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden shadow-sm divide-y divide-white/5">
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.03] transition-colors cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
+                  <Settings className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-white">Configurações</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-500" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onViewHistory}
+              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.03] transition-colors cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
+                  <History className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-white">Histórico de Repasses</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-500" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onHelpCenter}
+              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.03] transition-colors cursor-pointer text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
+                  <HelpCircle className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-white">Central de Ajuda</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-500" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onLogout}
+              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-red-500/10 transition-colors cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+                  <LogOut className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-red-400 group-hover:text-red-300">
+                  Sair da Conta
+                </span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-red-400/50" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <HomeIndicator />
+    </div>
+  );
+};`,
+  },
+  {
+    name: 'SettingsScreen.tsx',
+    category: 'Novos Componentes (Expansão)',
+    code: `import React, { useState } from 'react';
+import { ChevronLeft, Sliders, Wine, Utensils, MapPin } from 'lucide-react';
+import { StatusBar } from '../components/ui/StatusBar';
+import { HomeIndicator } from '../components/ui/HomeIndicator';
+
+interface SettingsScreenProps {
+  onBack: () => void;
+  onSave?: (settings: {
+    bartenderActive: boolean;
+    garcomActive: boolean;
+    maxDistanceKm: number;
+  }) => void;
+}
+
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
+  onBack,
+  onSave,
+}) => {
+  const [bartenderActive, setBartenderActive] = useState(true);
+  const [garcomActive, setGarcomActive] = useState(true);
+  const [maxDistanceKm, setMaxDistanceKm] = useState(10);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMaxDistanceKm(Number(e.target.value));
+  };
+
+  const handleBack = () => {
+    if (onSave) {
+      onSave({ bartenderActive, garcomActive, maxDistanceKm });
+    }
+    onBack();
+  };
 
   return (
     <div className="w-full h-full min-h-[720px] bg-[#0E0F12] text-white flex flex-col justify-between relative overflow-hidden select-none">
       <StatusBar time="9:41" />
 
-      <div className="flex-1 px-7 pt-4 pb-6 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-7">
-            <div className="w-8 h-8 rounded-xl bg-[#00E676]/10 border border-[#00E676] flex items-center justify-center text-[#00E676]">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <span className="text-lg font-black tracking-wider text-white">TRAMPO</span>
-            <span className="text-[10px] font-extrabold uppercase bg-[#202227] text-zinc-300 px-2 py-0.5 rounded border border-white/5 tracking-wider">
-              CWB
-            </span>
-          </div>
+      {/* Header com Voltar */}
+      <div className="px-5 pt-2 pb-3 flex items-center justify-between border-b border-white/5">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="flex items-center gap-1.5 py-1 px-2.5 -ml-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="w-5 h-5 text-[#00E676]" />
+          <span className="text-xs font-semibold">Voltar</span>
+        </button>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2.5">
-            Bem-vindo de volta
-          </h1>
-          <p className="text-xs text-zinc-400 leading-relaxed max-w-[320px]">
-            Entre na sua conta para encontrar seus próximos turnos em restaurantes e bares.
+        <h1 className="text-base font-extrabold tracking-tight text-white">
+          Configurações
+        </h1>
+        <div className="w-12" />
+      </div>
+
+      <div className="flex-1 px-5 py-4 overflow-y-auto space-y-6 pb-20">
+        {/* Seção: Preferências de Trabalho (Toggles independentes) */}
+        <div>
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Sliders className="w-3.5 h-3.5 text-[#00E676]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Preferências de Trabalho
+            </h3>
+          </div>
+          <p className="text-xs text-zinc-400 mb-3 px-1">
+            Selecione quais tipos de vagas deseja receber. Você pode ativar ambas.
           </p>
 
-          <form className="mt-8 flex flex-col gap-4">
-            <TextInput
-              label="E-MAIL"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-            />
+          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-sm">
+            {/* Bartender */}
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div className="flex items-center gap-3">
+                <div
+                  className={\`w-9 h-9 rounded-xl flex items-center justify-center transition-colors \${
+                    bartenderActive
+                      ? 'bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30'
+                      : 'bg-white/5 text-zinc-400'
+                  }\`}
+                >
+                  <Wine className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">Bartender</h4>
+                  <p className="text-[11px] text-zinc-400">Coquetelaria e drinks</p>
+                </div>
+              </div>
 
-            <div>
-              <TextInput
-                label="SENHA"
-                isPassword
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+              <button
+                type="button"
+                onClick={() => setBartenderActive(!bartenderActive)}
+                className={\`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none \${
+                  bartenderActive ? 'bg-[#00E676]' : 'bg-zinc-700'
+                }\`}
+              >
+                <span
+                  className={\`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out \${
+                    bartenderActive ? 'translate-x-5' : 'translate-x-0'
+                  }\`}
+                />
+              </button>
+            </div>
+
+            {/* Garçom */}
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div className="flex items-center gap-3">
+                <div
+                  className={\`w-9 h-9 rounded-xl flex items-center justify-center transition-colors \${
+                    garcomActive
+                      ? 'bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30'
+                      : 'bg-white/5 text-zinc-400'
+                  }\`}
+                >
+                  <Utensils className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">Garçom</h4>
+                  <p className="text-[11px] text-zinc-400">Atendimento de salão</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setGarcomActive(!garcomActive)}
+                className={\`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none \${
+                  garcomActive ? 'bg-[#00E676]' : 'bg-zinc-700'
+                }\`}
+              >
+                <span
+                  className={\`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out \${
+                    garcomActive ? 'translate-x-5' : 'translate-x-0'
+                  }\`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Seção: Raio de Distância */}
+        <div>
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <MapPin className="w-3.5 h-3.5 text-[#00E676]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Raio de Distância
+            </h3>
+          </div>
+
+          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-300 font-medium">Distância máxima de busca</span>
+              <span className="text-sm font-extrabold text-[#00E676] bg-[#00E676]/10 px-2.5 py-0.5 rounded-full border border-[#00E676]/20">
+                {maxDistanceKm} km
+              </span>
+            </div>
+
+            <div className="py-2">
+              <input
+                type="range"
+                min="1"
+                max="15"
+                step="1"
+                value={maxDistanceKm}
+                onChange={handleSliderChange}
+                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#00E676]"
               />
-              <div className="flex justify-end mt-2">
-                <button type="button" className="text-xs text-[#00E676] font-semibold hover:underline">
-                  Esqueceu a senha?
-                </button>
+              <div className="flex justify-between text-[10px] text-zinc-500 font-bold mt-1.5 px-0.5">
+                <span>1 km</span>
+                <span>5 km</span>
+                <span>10 km</span>
+                <span>15 km</span>
               </div>
             </div>
 
-            <div className="mt-2">
-              <PrimaryButton icon={<LogIn className="w-4 h-4 text-black" />}>
-                ENTRAR NA CONTA
-              </PrimaryButton>
-            </div>
-          </form>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-5">
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-zinc-800 w-full" />
-            <span className="bg-[#0E0F12] px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 shrink-0">
-              OU ENTRAR COM
-            </span>
-            <div className="border-t border-zinc-800 w-full" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <SocialButton provider="Google" />
-            <SocialButton provider="Apple" />
-          </div>
-
-          <div className="text-center pt-1">
-            <p className="text-xs text-zinc-400">
-              Não tem uma conta? <span className="text-[#00E676] font-bold hover:underline cursor-pointer">Cadastre-se</span>
+            <p className="text-[11px] text-zinc-400">
+              Vagas fora deste raio não emitirão notificações sonoras de alta prioridade.
             </p>
           </div>
         </div>
@@ -367,296 +431,184 @@ export const LoginScreen: React.FC = () => {
 };`,
   },
   {
-    name: 'CadastroScreen.tsx',
-    category: 'Screens',
-    code: `// Tela 2: cadastro-screen
-import React, { useState } from 'react';
-import { UserPlus, Check } from 'lucide-react';
+    name: 'ActiveGigScreen.tsx',
+    category: 'Novos Componentes (Expansão)',
+    code: `import React, { useState } from 'react';
+import { 
+  Navigation, 
+  MapPin, 
+  Clock, 
+  CheckCircle, 
+  ExternalLink,
+  ShieldCheck,
+  Phone
+} from 'lucide-react';
 import { StatusBar } from '../components/ui/StatusBar';
 import { HomeIndicator } from '../components/ui/HomeIndicator';
-import { TextInput } from '../components/ui/TextInput';
-import { ProfessionToggle } from '../components/ui/ProfessionToggle';
 import { PrimaryButton } from '../components/ui/PrimaryButton';
-import { Profession } from '../types';
+import { GigOffer } from '../types';
 
-export const CadastroScreen: React.FC = () => {
-  const [profession, setProfession] = useState<Profession>('Bartender');
-  const [nome, setNome] = useState('Gabriel Silva');
-  const [email, setEmail] = useState('seu@email.com');
-  const [telefone, setTelefone] = useState('(41) 99999-0000');
-  const [senha, setSenha] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(true);
+interface ActiveGigScreenProps {
+  gig: GigOffer;
+  onFinishShift?: (gig: GigOffer) => void;
+  onOpenNavigation?: () => void;
+  onCancelGig?: () => void;
+}
+
+export const ActiveGigScreen: React.FC<ActiveGigScreenProps> = ({
+  gig,
+  onFinishShift,
+  onOpenNavigation,
+  onCancelGig,
+}) => {
+  const [shiftStatus, setShiftStatus] = useState<'heading_to_venue' | 'arrived_working'>('heading_to_venue');
+
+  const handlePrimaryAction = () => {
+    if (shiftStatus === 'heading_to_venue') {
+      setShiftStatus('arrived_working');
+    } else {
+      if (onFinishShift) onFinishShift(gig);
+    }
+  };
+
+  const handleLaunchExternalMap = () => {
+    if (onOpenNavigation) {
+      onOpenNavigation();
+    } else {
+      window.open(
+        \`https://www.google.com/maps/search/?api=1&query=\${encodeURIComponent(\`\${gig.venueName} Curitiba\`)}\`,
+        '_blank'
+      );
+    }
+  };
 
   return (
     <div className="w-full h-full min-h-[720px] bg-[#0E0F12] text-white flex flex-col justify-between relative overflow-hidden select-none">
-      <StatusBar time="9:42" />
+      <StatusBar time="9:41" />
 
-      <div className="flex-1 px-7 pt-2 pb-5 flex flex-col justify-between overflow-y-auto">
-        <div>
-          <div className="mb-5">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-              Criar Conta
-            </h1>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Cadastre-se e comece a faturar hoje mesmo em Curitiba.
-            </p>
-          </div>
-
-          <form className="flex flex-col gap-3.5">
-            <ProfessionToggle selected={profession} onChange={setProfession} />
-
-            <TextInput
-              label="NOME COMPLETO"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Gabriel Silva"
-            />
-
-            <TextInput
-              label="E-MAIL"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-            />
-
-            <TextInput
-              label="TELEFONE"
-              maskType="phone"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              placeholder="(41) 99999-0000"
-            />
-
-            <TextInput
-              label="SENHA"
-              isPassword
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Crie uma senha forte"
-            />
-
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => setAcceptTerms(!acceptTerms)}
-                className={\`
-                  w-5 h-5 rounded-md flex items-center justify-center transition-colors cursor-pointer shrink-0
-                  \${acceptTerms ? 'bg-[#00E676] text-black shadow-[0_0_8px_rgba(0,230,118,0.4)]' : 'border border-zinc-600 bg-[#18191D]'}
-                \`}
-              >
-                {acceptTerms && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-              </button>
-              <label className="text-xs text-zinc-400 cursor-pointer">
-                Li e aceito os <span className="text-white underline font-medium">Termos de Uso</span> e Políticas.
-              </label>
-            </div>
-
-            <div className="mt-3">
-              <PrimaryButton icon={<UserPlus className="w-4 h-4 text-black" />}>
-                CRIAR MINHA CONTA
-              </PrimaryButton>
-            </div>
-          </form>
+      {/* Cabeçalho */}
+      <div className="px-5 pt-1 pb-3 flex items-center justify-between border-b border-white/5">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E676] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00E676]" />
+          </span>
+          <h1 className="text-sm font-black tracking-wider uppercase text-white">
+            Turno em Andamento
+          </h1>
         </div>
 
-        <div className="text-center pt-4">
-          <p className="text-xs text-zinc-400">
-            Já tem uma conta? <span className="text-[#00E676] font-bold hover:underline cursor-pointer">Entrar</span>
-          </p>
-        </div>
+        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30">
+          {shiftStatus === 'heading_to_venue' ? 'A Caminho' : 'Em Serviço'}
+        </span>
       </div>
 
-      <HomeIndicator />
-    </div>
-  );
-};`,
-  },
-  {
-    name: 'MapDashboardScreen.tsx',
-    category: 'Screens',
-    code: `// Tela 3: map-dashboard
-import React, { useState } from 'react';
-import { Power, Wallet, MapPin } from 'lucide-react';
-import { StatusBar } from '../components/ui/StatusBar';
-import { HomeIndicator } from '../components/ui/HomeIndicator';
-import { PrimaryButton } from '../components/ui/PrimaryButton';
-import { MapPlaceholder } from '../components/map/MapPlaceholder';
-import { GigOffer } from '../types';
+      <div className="flex-1 px-5 py-4 overflow-y-auto space-y-4 pb-24">
+        {/* Card Principal */}
+        <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 shadow-lg space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#00E676] bg-[#00E676]/10 px-2 py-0.5 rounded-full border border-[#00E676]/20">
+                {gig.profession}
+              </span>
+              <h2 className="text-xl font-black text-white mt-1.5 tracking-tight">
+                {gig.venueName}
+              </h2>
+              <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span>{gig.neighborhood} • Curitiba</span>
+              </div>
+            </div>
 
-export const MapDashboardScreen: React.FC<{ gigs: GigOffer[]; onSelectGig: (gig: GigOffer) => void }> = ({
-  gigs,
-  onSelectGig,
-}) => {
-  const [isOnline, setIsOnline] = useState(false);
-
-  return (
-    <div className="w-full h-full min-h-[720px] bg-[#0A0B0E] text-white flex flex-col justify-between relative overflow-hidden select-none">
-      <div className="absolute inset-0 z-0">
-        <MapPlaceholder gigs={gigs} onSelectGig={onSelectGig} isOnline={isOnline} />
-      </div>
-
-      <div className="relative z-20 flex flex-col">
-        <StatusBar time="9:41" />
-        <div className="flex justify-center -mt-1 mb-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold text-zinc-300 tracking-wider uppercase">
-            <MapPin className="w-3 h-3 text-[#00E676]" />
-            <span>CURITIBA, BRASIL</span>
+            <div className="text-right">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">TAXA</span>
+              <span className="text-xl font-black text-[#00E676] block">{gig.rateFormatted}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between px-5 pt-1">
-          <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
-              alt="Perfil"
-              className="w-10 h-10 rounded-full object-cover border-2 border-[#00E676]"
-            />
-            <span className={\`absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full \${isOnline ? 'bg-[#00E676] text-black' : 'bg-[#18191D] text-zinc-400 border border-zinc-700'}\`}>
-              {isOnline ? 'ONLINE' : 'OFFLINE'}
+          <div className="border-t border-white/5 pt-2.5 flex items-center justify-between text-xs text-zinc-300">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-[#00E676]" />
+              <span className="font-semibold">{gig.shiftTime}</span>
+            </div>
+            <span className="text-[11px] text-zinc-400 bg-white/5 px-2 py-0.5 rounded-md">
+              {gig.shiftDuration}
             </span>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2.5 bg-[#141519]/90 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2">
-            <Wallet className="w-3.5 h-3.5 text-[#00E676]" />
-            <div className="flex flex-col text-right">
-              <span className="text-[10px] text-zinc-400 font-medium leading-none">Ganhos Hoje</span>
-              <span className="text-xs font-black text-white mt-0.5">R$ 150,00</span>
+        {/* Placeholder retangular para o mapa da rota */}
+        <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-md">
+          <div className="bg-gray-800 h-44 w-full flex flex-col justify-between p-3.5 relative overflow-hidden">
+            {/* Traçado GPS */}
+            <svg
+              className="absolute inset-0 w-full h-full opacity-60"
+              viewBox="0 0 300 160"
+              preserveAspectRatio="xMidYMid slice"
+            >
+              <path
+                d="M -10 120 C 50 110 80 140 130 90 C 180 40 220 70 290 30"
+                stroke="#00E676"
+                strokeWidth="5"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <circle cx="20" cy="118" r="5" fill="#3b82f6" stroke="#fff" strokeWidth="1.5" />
+              <circle cx="270" cy="35" r="7" fill="#00E676" stroke="#fff" strokeWidth="2" />
+            </svg>
+
+            {/* ETA */}
+            <div className="relative z-10 self-start bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
+              <span className="text-xs font-bold text-white">
+                Estimativa de Chegada (ETA) - 4.5 km
+              </span>
             </div>
+
+            <div className="relative z-10 self-end bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 text-[11px] font-semibold text-zinc-300">
+              ~ 12 min de trânsito
+            </div>
+          </div>
+        </div>
+
+        {/* Botão Navegar (Waze/Maps) */}
+        <button
+          type="button"
+          onClick={handleLaunchExternalMap}
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 bg-[#1C1C1E] hover:bg-[#252528] active:bg-[#2c2c30] text-white border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm group"
+        >
+          <Navigation className="w-4 h-4 text-[#00E676] transition-transform group-hover:scale-110" />
+          <span>Navegar (Waze / Maps)</span>
+          <ExternalLink className="w-3.5 h-3.5 text-zinc-500 ml-1" />
+        </button>
+
+        <div className="bg-[#1C1C1E]/60 border border-white/5 rounded-2xl p-3 flex items-start gap-2.5 text-left">
+          <ShieldCheck className="w-4 h-4 text-[#00E676] shrink-0 mt-0.5" />
+          <div className="text-[11px] text-zinc-400">
+            <span className="text-zinc-200 font-semibold block">Apresentação:</span>
+            Apresente-se ao gerente informando que você veio via <strong className="text-white">Trampo CWB</strong>.
           </div>
         </div>
       </div>
 
-      <div className="relative z-20 px-4 pb-2">
-        <div className="bg-[#141519]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <span className={\`w-3 h-3 rounded-full \${isOnline ? 'bg-[#00E676] animate-pulse' : 'bg-red-500'}\`} />
-            <div>
-              <h3 className="text-sm font-bold text-white">
-                {isOnline ? 'Você está conectado' : 'Você está desconectado'}
-              </h3>
-              <p className="text-xs text-zinc-400">
-                {isOnline ? 'Buscando novos turnos prioritários...' : \`\${gigs.length} vagas ativas perto de você agora.\`}
-              </p>
-            </div>
-          </div>
-
-          <PrimaryButton
-            onClick={() => setIsOnline(!isOnline)}
-            variant={isOnline ? 'dark' : 'neon'}
-            icon={<Power className="w-4 h-4" />}
-          >
-            {isOnline ? 'FICAR OFFLINE' : 'FICAR ONLINE'}
-          </PrimaryButton>
-        </div>
+      {/* Botão Inferior Principal */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0E0F12] via-[#0E0F12]/95 to-transparent pt-6 z-20">
+        <PrimaryButton
+          onClick={handlePrimaryAction}
+          icon={
+            shiftStatus === 'heading_to_venue' ? (
+              <MapPin className="w-4 h-4 text-black" />
+            ) : (
+              <CheckCircle className="w-4 h-4 text-black" />
+            )
+          }
+        >
+          {shiftStatus === 'heading_to_venue'
+            ? 'CHEGUEI NO LOCAL'
+            : 'FINALIZAR TURNO'}
+        </PrimaryButton>
 
         <HomeIndicator />
-      </div>
-    </div>
-  );
-};`,
-  },
-  {
-    name: 'GigOfferBottomSheet.tsx',
-    category: 'Screens',
-    code: `// Tela 4: gig-offer-bottom-sheet
-import React from 'react';
-import { Star, ShieldAlert, Sparkles, MapPin } from 'lucide-react';
-import { PrimaryButton } from '../components/ui/PrimaryButton';
-import { HomeIndicator } from '../components/ui/HomeIndicator';
-import { StatusBar } from '../components/ui/StatusBar';
-import { MapPlaceholder } from '../components/map/MapPlaceholder';
-import { GigOffer } from '../types';
-
-export const GigOfferBottomSheet: React.FC<{
-  gig: GigOffer;
-  allGigs: GigOffer[];
-  onAccept: (gig: GigOffer) => void;
-  onDecline: (gig: GigOffer) => void;
-}> = ({ gig, allGigs, onAccept, onDecline }) => {
-  return (
-    <div className="w-full h-full min-h-[720px] bg-[#0A0B0E] text-white flex flex-col justify-between relative overflow-hidden select-none">
-      <div className="absolute inset-0 z-0">
-        <MapPlaceholder gigs={allGigs} selectedGigId={gig.id} onSelectGig={() => {}} isOnline={true} />
-        <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col">
-        <StatusBar time="9:41" />
-        <div className="flex justify-center -mt-1 mb-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-black/70 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold text-zinc-300 tracking-wider uppercase">
-            <MapPin className="w-3 h-3 text-[#00E676]" />
-            <span>CURITIBA, BRASIL</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative z-20 mt-auto">
-        <div className="bg-[#141519]/98 backdrop-blur-2xl border-t border-white/10 rounded-t-[32px] px-6 pt-3 pb-4 shadow-2xl flex flex-col gap-4">
-          <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto -mt-0.5 mb-1" />
-
-          <div className="flex items-center gap-2.5">
-            <span className="bg-[#00E676]/15 border border-[#00E676]/40 text-[#00E676] text-[11px] font-extrabold uppercase px-3 py-1 rounded-full">
-              {gig.profession}
-            </span>
-            <span className="bg-[#202227] text-zinc-300 text-[11px] font-medium px-3 py-1 rounded-full border border-white/5">
-              {gig.distance}
-            </span>
-          </div>
-
-          <div>
-            <h2 className="text-2xl font-black text-white tracking-tight">{gig.venueName}</h2>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-400">
-              <span className="text-[#00E676] flex items-center gap-1 font-bold">
-                <Star className="w-3.5 h-3.5 fill-[#00E676] text-[#00E676]" />
-                {gig.rating.toFixed(1)}
-              </span>
-              <span>•</span>
-              <span>{gig.neighborhood}</span>
-            </div>
-          </div>
-
-          <div className="bg-[#1A1C22]/80 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">VALOR DO TURNO</span>
-              <span className="text-2xl font-black text-[#00E676] tracking-tight mt-0.5">{gig.rateFormatted}</span>
-            </div>
-            <div className="w-px h-10 bg-white/10" />
-            <div className="flex flex-col text-right">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">HORÁRIO</span>
-              <span className="text-sm font-bold text-white mt-0.5">{gig.shiftTime}</span>
-              <span className="text-[11px] text-zinc-400">{gig.shiftDuration}</span>
-            </div>
-          </div>
-
-          <div className="bg-[#181B20] border border-white/5 rounded-2xl p-3.5 text-left flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-3.5 h-3.5 text-[#00E676]" />
-              <span className="text-[11px] font-extrabold uppercase text-[#00E676] tracking-wider">
-                {gig.microtraining.title}
-              </span>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-white mb-0.5">{gig.microtraining.rulesTitle}</h4>
-              <p className="text-[11px] text-zinc-300 leading-relaxed">{gig.microtraining.description}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 pt-1">
-            <PrimaryButton onClick={() => onAccept(gig)}>
-              ACEITAR TAXA (R$ {gig.rate})
-            </PrimaryButton>
-            <button
-              type="button"
-              onClick={() => onDecline(gig)}
-              className="w-full py-2.5 text-xs text-zinc-400 hover:text-white font-medium cursor-pointer"
-            >
-              Recusar Proposta
-            </button>
-          </div>
-        </div>
-
-        <HomeIndicator className="bg-[#141519]/98" />
       </div>
     </div>
   );
@@ -722,7 +674,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
         {/* Modal Body */}
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar file list */}
-          <div className="w-60 border-r border-white/10 bg-[#0c0e12] p-3 flex flex-col gap-1 overflow-y-auto">
+          <div className="w-64 border-r border-white/10 bg-[#0c0e12] p-3 flex flex-col gap-1 overflow-y-auto">
             <span className="text-[10px] font-bold text-zinc-500 uppercase px-2 py-1 tracking-wider">
               Arquivos de Componentes
             </span>
