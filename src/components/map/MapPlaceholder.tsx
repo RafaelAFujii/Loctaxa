@@ -1,6 +1,13 @@
 import React from 'react';
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  ColorScheme
+} from '@vis.gl/react-google-maps';
 import { GigOffer } from '../../types';
 import { GigMarker } from './GigMarker';
+import { GOOGLE_MAPS_API_KEY } from '../../constants/maps';
 
 interface MapPlaceholderProps {
   gigs: GigOffer[];
@@ -9,125 +16,194 @@ interface MapPlaceholderProps {
   isOnline?: boolean;
 }
 
+// Estilo noturno de alto contraste ultra-dark para o Google Maps (#0A0B0E / #121418 / #00E676)
+const darkMapStyles: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#0d1017' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#090b10' }, { weight: 3 }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#e2e8f0' }],
+  },
+  {
+    featureType: 'administrative.neighborhood',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#00E676' }, { opacity: 0.85 }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#00E676' }, { visibility: 'simplified' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#0c2419' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#00E676' }, { opacity: 0.8 }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#171c26' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#10141c' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#222938' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#00E676' }, { opacity: 0.35 }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#19202c' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#06080b' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#334155' }],
+  },
+];
+
+// Posição central de Curitiba (Praça Tiradentes / Batel)
+const CURITIBA_CENTER = { lat: -25.4372, lng: -49.2785 };
+const USER_LOCATION = { lat: -25.4390, lng: -49.2810 };
+
 export const MapPlaceholder: React.FC<MapPlaceholderProps> = ({
   gigs,
   selectedGigId,
   onSelectGig,
   isOnline = false,
 }) => {
-  return (
-    <div className="map-placeholder relative w-full h-full overflow-hidden bg-[#0a0c10] select-none">
-      {/* Dark map stylized vector background */}
+  const apiKey = GOOGLE_MAPS_API_KEY;
+
+  // Visualização de fallback escuro SVG com os marcadores de vagas
+  const renderFallbackVectorMap = () => (
+    <div className="relative w-full h-full min-h-[400px] overflow-hidden bg-[#0c0f14] select-none">
       <svg
-        className="absolute inset-0 w-full h-full opacity-90"
-        viewBox="0 0 400 700"
+        className="absolute inset-0 w-full h-full opacity-60"
+        viewBox="0 0 800 800"
         preserveAspectRatio="xMidYMid slice"
       >
-        <defs>
-          <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#00E676" stopOpacity="0.12" />
-            <stop offset="60%" stopColor="#00E676" stopOpacity="0.02" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
-          </radialGradient>
-
-          <linearGradient id="roadGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00E676" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#00FF88" stopOpacity="1" />
-            <stop offset="100%" stopColor="#00E676" stopOpacity="0.8" />
-          </linearGradient>
-
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Ambient map glow around center */}
-        <circle cx="200" cy="350" r="280" fill="url(#mapGlow)" />
-
-        {/* City Blocks / Buildings mesh subtle patterns */}
-        <g stroke="#1a2228" strokeWidth="0.8" fill="none" opacity="0.45">
-          <path d="M 40 80 L 120 70 L 150 140 L 60 150 Z" />
-          <path d="M 160 80 L 260 60 L 280 130 L 170 140 Z" />
-          <path d="M 280 90 L 370 80 L 380 160 L 290 170 Z" />
-          <path d="M 50 190 L 140 180 L 130 270 L 40 260 Z" />
-          <path d="M 270 190 L 360 180 L 370 280 L 280 290 Z" />
-          <path d="M 50 330 L 120 320 L 110 420 L 40 430 Z" />
-          <path d="M 280 340 L 360 330 L 370 450 L 290 460 Z" />
-          <path d="M 60 480 L 150 470 L 130 580 L 40 590 Z" />
-          <path d="M 260 490 L 360 480 L 350 600 L 250 610 Z" />
-        </g>
-
-        {/* Park areas (dark green silhouettes) */}
-        <g fill="#0e2619" opacity="0.5">
-          <path d="M 20 180 Q 70 160 90 220 Q 80 270 30 260 Z" />
-          <path d="M 300 240 Q 370 220 380 290 Q 320 310 300 240 Z" />
-          <path d="M 30 460 Q 80 430 70 510 Q 20 530 30 460 Z" />
-        </g>
-
-        {/* Secondary street grid */}
-        <g stroke="#1e2d27" strokeWidth="1.2" opacity="0.75" fill="none">
-          <path d="M -20 120 L 420 100" />
-          <path d="M -20 220 L 420 190" />
-          <path d="M -20 310 L 420 290" />
-          <path d="M -20 420 L 420 400" />
-          <path d="M -20 530 L 420 510" />
-          <path d="M -20 620 L 420 600" />
-
-          <path d="M 60 -20 L 80 720" />
-          <path d="M 150 -20 L 140 720" />
-          <path d="M 240 -20 L 250 720" />
-          <path d="M 330 -20 L 340 720" />
-        </g>
-
-        {/* Major glowing thoroughfares (bright neon green arterials) */}
-        <g stroke="url(#roadGlow)" fill="none" strokeLinecap="round" filter="url(#glow)">
-          {/* Main diagonal arterial (like Av. Paulista / Batel) */}
-          <path d="M -10 250 Q 180 320 410 440" strokeWidth="4.5" strokeOpacity="0.9" />
-          {/* Secondary glowing artery */}
-          <path d="M 210 -20 Q 195 240 185 720" strokeWidth="4" strokeOpacity="0.85" />
-          {/* Connector loop */}
-          <path d="M 60 140 C 140 190 280 220 340 310" strokeWidth="3" strokeOpacity="0.8" />
-          {/* South bypass */}
-          <path d="M 90 620 C 190 540 280 520 410 590" strokeWidth="3.5" strokeOpacity="0.8" />
-          {/* North connector */}
-          <path d="M 40 60 C 120 120 310 110 390 170" strokeWidth="2.5" strokeOpacity="0.75" />
-        </g>
-
-        {/* Glowing road centerlines */}
-        <g stroke="#ffffff" strokeWidth="1" strokeDasharray="6 6" fill="none" opacity="0.6">
-          <path d="M -10 250 Q 180 320 410 440" />
-          <path d="M 210 -20 Q 195 240 185 720" />
-        </g>
-
-        {/* Topographic & landmark labels on map */}
-        <g fill="#4e655c" fontSize="9" fontWeight="600" letterSpacing="1" fontFamily="sans-serif">
-          <text x="35" y="215" opacity="0.65">PARQUE BARIGUI</text>
-          <text x="75" y="325" opacity="0.7">BATEL</text>
-          <text x="210" y="275" opacity="0.8">CENTRO CÍVICO</text>
-          <text x="245" y="420" opacity="0.7">VILA IZABEL</text>
-          <text x="50" y="505" opacity="0.6">ÁGUA VERDE</text>
-          <text x="280" y="555" opacity="0.6">PORTÃO</text>
-        </g>
-
-        {/* User position radar pulse when online */}
-        {isOnline && (
-          <g>
-            <circle cx="200" cy="350" r="18" fill="#00E676" fillOpacity="0.25" className="animate-ping" />
-            <circle cx="200" cy="350" r="9" fill="#00E676" stroke="#ffffff" strokeWidth="2" />
-          </g>
-        )}
+        <rect width="100%" height="100%" fill="#0c0e13" />
+        <circle cx="400" cy="400" r="380" fill="#00E676" fillOpacity="0.05" />
+        <path d="M -50 380 Q 400 440 850 620" stroke="#00E676" strokeWidth="4" strokeOpacity="0.4" fill="none" />
+        <path d="M 400 -50 Q 380 380 360 850" stroke="#00E676" strokeWidth="4" strokeOpacity="0.4" fill="none" />
+        <path d="M 120 750 Q 450 320 720 100" stroke="#1c2230" strokeWidth="6" fill="none" />
+        <circle cx="400" cy="400" r="12" fill="#00E676" fillOpacity="0.8" />
       </svg>
+      {isOnline &&
+        gigs.map((gig) => (
+          <GigMarker
+            key={gig.id}
+            gig={gig}
+            isSelected={gig.id === selectedGigId}
+            onClick={onSelectGig}
+          />
+        ))}
+    </div>
+  );
 
-      {/* Floating Gig Markers */}
-      {gigs.map((gig) => (
-        <GigMarker
-          key={gig.id}
-          gig={gig}
-          isSelected={gig.id === selectedGigId}
-          onClick={onSelectGig}
-        />
-      ))}
+  return (
+    <div 
+      className="relative w-full h-full min-h-[400px] overflow-hidden bg-[#0c0f14] select-none"
+      style={{ width: '100%', height: '100%' }}
+    >
+      <APIProvider 
+        apiKey={apiKey}
+        onLoad={() => console.log('Google Maps API Loaded successfully')}
+      >
+        <Map
+          mapId="DEMO_MAP_ID"
+          colorScheme={ColorScheme.DARK}
+          defaultCenter={CURITIBA_CENTER}
+          defaultZoom={13.5}
+          gestureHandling="greedy"
+          disableDefaultUI={true}
+          styles={darkMapStyles}
+          className="w-full h-full"
+          style={{ width: '100%', height: '100%', minHeight: '100%' }}
+          reuseMaps={true}
+        >
+          {/* Marcador do Usuário (Freelancer) pulsando em Curitiba */}
+          {isOnline && (
+            <AdvancedMarker position={USER_LOCATION} title="Sua Localização Atual">
+              <div className="relative flex items-center justify-center pointer-events-auto">
+                <span className="w-8 h-8 rounded-full bg-[#00E676]/30 animate-ping absolute" />
+                <div className="w-5 h-5 rounded-full bg-[#00E676] border-2 border-white shadow-[0_0_15px_#00E676] flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-black" />
+                </div>
+              </div>
+            </AdvancedMarker>
+          )}
+
+          {/* Marcadores Interativos Reais no Google Maps com Taxas */}
+          {isOnline &&
+            gigs.map((gig) => {
+              const isSelected = gig.id === selectedGigId;
+              const position = gig.latLng || {
+                lat: CURITIBA_CENTER.lat + (gig.coords.y - 50) * 0.001,
+                lng: CURITIBA_CENTER.lng + (gig.coords.x - 50) * 0.001,
+              };
+
+              return (
+                <AdvancedMarker
+                  key={gig.id}
+                  position={position}
+                  onClick={() => onSelectGig(gig)}
+                  title={`${gig.venueName} - ${gig.rateFormatted}`}
+                >
+                  <div
+                    className={`flex flex-col items-center cursor-pointer transition-all duration-300 transform hover:scale-110 select-none ${
+                      isSelected ? 'scale-110 z-30' : 'z-10'
+                    }`}
+                  >
+                    {/* Badge com Taxa e Nome */}
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-2xl border transition-all ${
+                        isSelected
+                          ? 'bg-[#00E676] text-black border-white font-black shadow-[0_0_20px_rgba(0,230,118,0.7)]'
+                          : 'bg-[#141519]/95 text-white border-white/20 hover:border-[#00E676]'
+                      }`}
+                    >
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#00E676] bg-black/50 px-1.5 py-0.5 rounded">
+                        {gig.profession}
+                      </span>
+                      <span className={`text-xs font-black ${isSelected ? 'text-black' : 'text-[#00E676]'}`}>
+                        {gig.rateFormatted}
+                      </span>
+                    </div>
+
+                    {/* Triângulo / Pin indicador */}
+                    <div
+                      className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] -mt-0.5 ${
+                        isSelected ? 'border-t-[#00E676]' : 'border-t-[#141519]'
+                      }`}
+                    />
+                  </div>
+                </AdvancedMarker>
+              );
+            })}
+        </Map>
+      </APIProvider>
     </div>
   );
 };

@@ -3,14 +3,13 @@ import { Wifi, Battery } from 'lucide-react';
 
 interface StatusBarProps {
   time?: string;
-  light?: boolean;
+  className?: string;
 }
 
-export const StatusBar: React.FC<StatusBarProps> = ({ time = '9:41' }) => {
+export const StatusBar: React.FC<StatusBarProps> = ({ time = '9:41', className = '' }) => {
   return (
-    <div className="w-full flex items-center justify-between px-6 pt-3 pb-1 select-none text-white text-xs font-semibold tracking-tight z-30">
+    <div className={`md:hidden w-full flex items-center justify-between px-6 pt-3 pb-1 select-none text-white text-xs font-semibold tracking-tight z-30 ${className}`}>
       <span>{time}</span>
-      <div className="w-24 h-4 bg-black rounded-full mx-auto -mt-1 hidden" />
       <div className="flex items-center space-x-1.5">
         <svg className="w-3.5 h-3 fill-current text-white" viewBox="0 0 16 12">
           <rect x="0" y="9" width="2.5" height="3" rx="0.5" />

@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* Garante preenchimento de viewport sem colapso de altura */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0A0B0E;
+}
+
+/* Garante que containers do Google Maps tenham altura explícita em mobile */
+.gm-style {
+  font-family: inherit !important;
+}
+
+/* Oculta termos e botões redundantes que poluem o mapa em tela pequena */
+.gm-style-cc {
+  display: none !important;
+}
+a[href^="http://maps.google.com/maps"],
+a[href^="https://maps.google.com/maps"] {
+  display: none !important;
+}

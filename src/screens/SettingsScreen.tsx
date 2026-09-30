@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Sliders, Wine, Utensils, Bell, Shield, MapPin } from 'lucide-react';
-import { StatusBar } from '../components/ui/StatusBar';
-import { HomeIndicator } from '../components/ui/HomeIndicator';
+import { ChevronLeft, Sliders, Wine, Utensils, MapPin, Bell, Shield, Check } from 'lucide-react';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -16,7 +15,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBack,
   onSave,
 }) => {
-  // Mock states para preferências
   const [bartenderActive, setBartenderActive] = useState(true);
   const [garcomActive, setGarcomActive] = useState(true);
   const [maxDistanceKm, setMaxDistanceKm] = useState(10);
@@ -34,199 +32,165 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   return (
-    <div className="w-full h-full min-h-[720px] bg-[#0E0F12] text-white flex flex-col justify-between relative overflow-hidden select-none">
-      {/* Top Status Bar */}
-      <StatusBar time="9:41" />
+    <div className="w-full min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 flex justify-center pb-24 lg:pb-10">
+      <div className="w-full max-w-3xl space-y-6">
+        {/* Top Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex items-center gap-2 py-2 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer text-xs sm:text-sm font-semibold"
+          >
+            <ChevronLeft className="w-4 h-4 text-[#00E676]" />
+            <span>Voltar ao Perfil</span>
+          </button>
 
-      {/* Header with Back Button */}
-      <div className="px-5 pt-2 pb-3 flex items-center justify-between border-b border-white/5">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-1.5 py-1 px-2.5 -ml-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-        >
-          <ChevronLeft className="w-5 h-5 text-[#00E676]" />
-          <span className="text-xs font-semibold">Voltar</span>
-        </button>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            Configurações
+          </h1>
 
-        <h1 className="text-base font-extrabold tracking-tight text-white">
-          Configurações
-        </h1>
+          <div className="w-24" />
+        </div>
 
-        <div className="w-12" /> {/* Balance placeholder */}
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 px-5 py-4 overflow-y-auto space-y-6 pb-20">
         {/* Section 1: Preferências de Trabalho */}
-        <div>
-          <div className="flex items-center gap-2 mb-2 px-1">
-            <Sliders className="w-3.5 h-3.5 text-[#00E676]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-              Preferências de Trabalho
-            </h3>
+        <div className="bg-[#121418] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <Sliders className="w-4 h-4 text-[#00E676]" />
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Preferências de Trabalho
+              </h2>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-400">
+              Selecione quais tipos de vagas deseja receber no mapa de Curitiba. Ambas as profissões podem ficar ativas simultaneamente.
+            </p>
           </div>
-          <p className="text-xs text-zinc-400 mb-3 px-1">
-            Selecione quais tipos de vagas deseja receber no mapa de Curitiba. Você pode ativar ambas.
-          </p>
 
-          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5 shadow-sm">
-            {/* Toggle Bartender */}
-            <div className="flex items-center justify-between px-4 py-3.5">
-              <div className="flex items-center gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Bartender Card */}
+            <div
+              onClick={() => setBartenderActive(!bartenderActive)}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between select-none ${
+                bartenderActive
+                  ? 'bg-[#00E676]/10 border-[#00E676] shadow-[0_0_15px_rgba(0,230,118,0.15)]'
+                  : 'bg-[#181a20] border-white/5 opacity-70 hover:opacity-100'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                    bartenderActive
-                      ? 'bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30'
-                      : 'bg-white/5 text-zinc-400'
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    bartenderActive ? 'bg-[#00E676] text-black font-bold' : 'bg-white/5 text-zinc-400'
                   }`}
                 >
-                  <Wine className="w-4 h-4" />
+                  <Wine className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white">Bartender</h4>
-                  <p className="text-[11px] text-zinc-400">
-                    Coquetelaria, drinks e bar principal
-                  </p>
+                  <p className="text-xs text-zinc-400">Drinks & Coquetelaria</p>
                 </div>
               </div>
 
-              {/* iOS Style Switch Toggle */}
-              <button
-                type="button"
-                onClick={() => setBartenderActive(!bartenderActive)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              {/* iOS switch */}
+              <div
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                   bartenderActive ? 'bg-[#00E676]' : 'bg-zinc-700'
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out ${
                     bartenderActive ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
-              </button>
+              </div>
             </div>
 
-            {/* Toggle Garçom */}
-            <div className="flex items-center justify-between px-4 py-3.5">
-              <div className="flex items-center gap-3">
+            {/* Garçom Card */}
+            <div
+              onClick={() => setGarcomActive(!garcomActive)}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between select-none ${
+                garcomActive
+                  ? 'bg-[#00E676]/10 border-[#00E676] shadow-[0_0_15px_rgba(0,230,118,0.15)]'
+                  : 'bg-[#181a20] border-white/5 opacity-70 hover:opacity-100'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                    garcomActive
-                      ? 'bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30'
-                      : 'bg-white/5 text-zinc-400'
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    garcomActive ? 'bg-[#00E676] text-black font-bold' : 'bg-white/5 text-zinc-400'
                   }`}
                 >
-                  <Utensils className="w-4 h-4" />
+                  <Utensils className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white">Garçom</h4>
-                  <p className="text-[11px] text-zinc-400">
-                    Atendimento de salão e praça
-                  </p>
+                  <p className="text-xs text-zinc-400">Atendimento e Salão</p>
                 </div>
               </div>
 
-              {/* iOS Style Switch Toggle */}
-              <button
-                type="button"
-                onClick={() => setGarcomActive(!garcomActive)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              {/* iOS switch */}
+              <div
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                   garcomActive ? 'bg-[#00E676]' : 'bg-zinc-700'
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out ${
                     garcomActive ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
-              </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Section 2: Raio de Distância */}
-        <div>
-          <div className="flex items-center gap-2 mb-2 px-1">
-            <MapPin className="w-3.5 h-3.5 text-[#00E676]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-              Raio de Distância
-            </h3>
+        <div className="bg-[#121418] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <MapPin className="w-4 h-4 text-[#00E676]" />
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Raio de Distância Máxima
+              </h2>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-400">
+              Defina a distância limite para vagas prioritárias ao redor da sua localização em Curitiba.
+            </p>
           </div>
 
-          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <div className="bg-[#181a20] border border-white/5 rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-zinc-300 font-medium">
-                Distância máxima de busca
-              </span>
-              <span className="text-sm font-extrabold text-[#00E676] bg-[#00E676]/10 px-2.5 py-0.5 rounded-full border border-[#00E676]/20">
+              <span className="text-sm text-zinc-300 font-medium">Distância configurada:</span>
+              <span className="text-base font-black text-[#00E676] bg-[#00E676]/10 px-3 py-1 rounded-full border border-[#00E676]/30">
                 {maxDistanceKm} km
               </span>
             </div>
 
-            {/* Slider range input */}
-            <div className="py-2">
-              <input
-                type="range"
-                min="1"
-                max="15"
-                step="1"
-                value={maxDistanceKm}
-                onChange={handleSliderChange}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#00E676]"
-              />
-              <div className="flex justify-between text-[10px] text-zinc-500 font-bold mt-1.5 px-0.5">
-                <span>1 km</span>
-                <span>5 km</span>
-                <span>10 km</span>
-                <span>15 km</span>
-              </div>
-            </div>
+            <input
+              type="range"
+              min="1"
+              max="15"
+              step="1"
+              value={maxDistanceKm}
+              onChange={handleSliderChange}
+              className="w-full h-2.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#00E676]"
+            />
 
-            <p className="text-[11px] text-zinc-400">
-              Vagas fora deste raio não emitirão notificações sonoras de alta prioridade.
-            </p>
+            <div className="flex justify-between text-xs text-zinc-500 font-bold px-1">
+              <span>1 km (Batel / Centro)</span>
+              <span>5 km</span>
+              <span>10 km (Maioria das vagas)</span>
+              <span>15 km (Grande Curitiba)</span>
+            </div>
           </div>
         </div>
 
-        {/* Extra: Alertas & Notificações */}
-        <div>
-          <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 px-1">
-            Notificações Rápidas
-          </h3>
-          <div className="bg-[#1C1C1E] border border-white/5 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
-                <Bell className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block">
-                  Alertas em Tempo Real
-                </span>
-                <span className="text-[10px] text-zinc-400">
-                  Som e vibração em novas vagas
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setPushNotifications(!pushNotifications)}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                pushNotifications ? 'bg-[#00E676]' : 'bg-zinc-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  pushNotifications ? 'translate-x-4' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
+        {/* Save button */}
+        <div className="pt-2">
+          <PrimaryButton onClick={handleBack}>
+            SALVAR PREFERÊNCIAS
+          </PrimaryButton>
         </div>
       </div>
-
-      <HomeIndicator />
     </div>
   );
 };

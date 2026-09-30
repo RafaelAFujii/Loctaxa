@@ -17,8 +17,12 @@ export interface GigOffer {
     description: string;
   };
   coords: {
-    x: number; // percentage on map
+    x: number; // percentage fallback
     y: number;
+  };
+  latLng: {
+    lat: number;
+    lng: number;
   };
   active: boolean;
 }
@@ -28,6 +32,7 @@ export type ScreenType =
   | 'cadastro-screen' 
   | 'map-dashboard' 
   | 'gig-offer-bottom-sheet'
+  | 'earnings-screen'
   | 'profile-screen'
   | 'settings-screen'
   | 'active-gig-screen';

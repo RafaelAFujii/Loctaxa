@@ -1,24 +1,19 @@
 import { useState, useMemo } from 'react';
 import { 
-  Smartphone, 
-  Layers, 
-  Code, 
-  CheckCircle2, 
-  RotateCcw, 
   Map, 
   Wallet, 
   User, 
-  ArrowLeft,
+  Sliders, 
+  Code, 
   Navigation,
-  Sliders,
-  Sparkles
+  LogOut
 } from 'lucide-react';
-import { MobileFrame } from './components/MobileFrame';
 import { LoginScreen } from './screens/LoginScreen';
 import { CadastroScreen } from './screens/CadastroScreen';
 import { MapDashboardScreen } from './screens/MapDashboardScreen';
 import { GigOfferBottomSheet } from './screens/GigOfferBottomSheet';
-import { ProfileScreen } from './screens/ProfileScreen';
+import { ProfileScreen, UserProfileData } from './screens/ProfileScreen';
+import { EarningsScreen } from './screens/EarningsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { ActiveGigScreen } from './screens/ActiveGigScreen';
 import { BottomNavigation } from './components/navigation/BottomNavigation';
@@ -27,10 +22,7 @@ import { mockGigs } from './data/mockGigs';
 import { GigOffer, ScreenType, NavTab } from './types';
 
 export default function App() {
-  // Modo de exibição: Simulador Interativo Contínuo (padrão) ou Visão Panorâmica de Telas
-  const [viewMode, setViewMode] = useState<'interactive-app' | 'overview'>('interactive-app');
-
-  // Estado do Freelancer e do App
+  // Inicializa já conectado e direto no mapa para validação imediata das vagas e rotas
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('map-dashboard');
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('map');
@@ -38,25 +30,30 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(true);
   const [activeShiftGig, setActiveShiftGig] = useState<GigOffer | null>(null);
 
-  // Preferências configuráveis
+  // Perfil de usuário editável
+  const [userProfile, setUserProfile] = useState<UserProfileData>({
+    name: 'Gabriel Silva',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=240&auto=format&fit=crop&q=80',
+    roleDescription: 'Bartender & Garçom Pro',
+    phone: '(41) 99999-0000',
+    email: 'freelancer@curitiba.com',
+    city: 'Curitiba, PR'
+  });
+
+  // Modal de Oferta
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+
+  // Configurações do Freelancer
   const [userSettings, setUserSettings] = useState({
     bartenderActive: true,
     garcomActive: true,
     maxDistanceKm: 10,
   });
 
-  // Notificações Toast
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // Code Modal
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3800);
-  };
-
-  // Filtragem das vagas no mapa baseada nas configurações de profissão e distância
+  // Filtragem de vagas baseada em preferências
   const filteredGigs = useMemo(() => {
     return mockGigs.filter((gig) => {
       if (gig.profession === 'Bartender' && !userSettings.bartenderActive) return false;
@@ -65,42 +62,33 @@ export default function App() {
     });
   }, [userSettings]);
 
-  // Transições de fluxo:
-  // 1. Clicar em vaga no mapa -> abre o modal de detalhes
+  // Ações de fluxo (sem popups intrusivos)
   const handleSelectGig = (gig: GigOffer) => {
     setSelectedGig(gig);
-    setCurrentScreen('gig-offer-bottom-sheet');
+    setIsOfferModalOpen(true);
   };
 
-  // 2. Aceitar taxa -> inicia turno em andamento na ActiveGigScreen
   const handleAcceptGig = (gig: GigOffer) => {
     setActiveShiftGig(gig);
+    setIsOfferModalOpen(false);
     setCurrentScreen('active-gig-screen');
-    showToast(`🚀 Turno aceito! Indo para ${gig.venueName} (${gig.rateFormatted})`);
   };
 
-  // 3. Recusar proposta ou fechar modal -> volta para o mapa
   const handleDeclineGig = (gig: GigOffer) => {
-    setCurrentScreen('map-dashboard');
-    showToast(`Proposta de ${gig.venueName} recusada.`);
+    setIsOfferModalOpen(false);
   };
 
-  // 4. Finalizar turno -> repasse contabilizado, volta ao mapa
   const handleFinishShift = (gig: GigOffer) => {
     setActiveShiftGig(null);
-    setCurrentScreen('map-dashboard');
-    setActiveNavTab('map');
-    showToast(`✅ Turno concluído com sucesso! ${gig.rateFormatted} transferidos via PIX.`);
+    setCurrentScreen('earnings-screen');
+    setActiveNavTab('earnings');
   };
 
-  // 5. Cancelar turno em andamento -> volta ao mapa
   const handleCancelShift = () => {
     setActiveShiftGig(null);
     setCurrentScreen('map-dashboard');
-    showToast('Turno cancelado. Vagas liberadas no mapa.');
   };
 
-  // 6. Navegação pela barra inferior
   const handleNavTabChange = (tab: NavTab) => {
     setActiveNavTab(tab);
     if (tab === 'map') {
@@ -110,426 +98,306 @@ export default function App() {
         setCurrentScreen('map-dashboard');
       }
     } else if (tab === 'earnings') {
-      setCurrentScreen('profile-screen');
-      showToast('Ganhos: R$ 1.280 acumulados esta semana');
+      setCurrentScreen('earnings-screen');
     } else if (tab === 'profile') {
       setCurrentScreen('profile-screen');
     }
   };
 
-  // 7. Login / Logout
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setCurrentScreen('map-dashboard');
     setActiveNavTab('map');
-    showToast('Bem-vindo de volta, Gabriel Silva!');
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setActiveShiftGig(null);
     setCurrentScreen('login-screen');
-    showToast('Você saiu da sua conta.');
   };
 
-  // Telas que exibem a BottomNavigation
-  const showBottomNav = 
-    isLoggedIn && 
-    (currentScreen === 'map-dashboard' || currentScreen === 'profile-screen');
-
   return (
-    <div className="min-h-screen bg-[#07080A] text-white flex flex-col font-sans selection:bg-[#00E676] selection:text-black">
-      {/* Top Application Bar */}
-      <header className="sticky top-0 z-50 bg-[#0E1015]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-        {/* Brand */}
+    <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col font-sans selection:bg-[#00E676] selection:text-black">
+      {/* ======================================================== */}
+      {/* DESKTOP & MOBILE RESPONSIVE HEADER BAR                  */}
+      {/* ======================================================== */}
+      <header className="sticky top-0 z-40 bg-[#121418]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* Left: Brand Identity */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#00E676] text-black font-black flex items-center justify-center text-sm shadow-[0_0_15px_rgba(0,230,118,0.5)]">
-            T
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold tracking-wider text-base text-white">TRAMPO</span>
-              <span className="text-[10px] font-black uppercase bg-[#00E676]/15 text-[#00E676] px-1.5 py-0.5 rounded border border-[#00E676]/30">
-                CWB
-              </span>
-            </div>
-            <p className="text-[11px] text-zinc-400">
-              Fluxo 100% Interativo Integrado • Dark Mode & #00E676
-            </p>
-          </div>
-        </div>
-
-        {/* View Mode Switcher */}
-        <div className="flex items-center bg-[#15171E] p-1 rounded-xl border border-white/10">
-          <button
-            onClick={() => setViewMode('interactive-app')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewMode === 'interactive-app'
-                ? 'bg-[#00E676] text-black shadow-[0_0_12px_rgba(0,230,118,0.35)]'
-                : 'text-zinc-400 hover:text-white'
-            }`}
+          <div 
+            onClick={() => setCurrentScreen('map-dashboard')} 
+            className="flex items-center gap-2.5 cursor-pointer select-none"
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>App Interativo Único</span>
-          </button>
-
-          <button
-            onClick={() => setViewMode('overview')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewMode === 'overview'
-                ? 'bg-[#00E676] text-black shadow-[0_0_12px_rgba(0,230,118,0.35)]'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Visão Panorâmica de Telas</span>
-          </button>
-        </div>
-
-        {/* Code Button */}
-        <button
-          onClick={() => setIsCodeModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1B1E26] hover:bg-[#252934] border border-white/10 text-xs font-semibold text-zinc-200 transition-colors cursor-pointer"
-        >
-          <Code className="w-3.5 h-3.5 text-[#00E676]" />
-          <span>Ver Código (.tsx)</span>
-        </button>
-      </header>
-
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 bg-[#16181F] border border-[#00E676] text-white px-5 py-3 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-3 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#00E676] shrink-0" />
-          <span className="text-xs font-bold">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Main Experience */}
-      <main className="flex-1 p-4 sm:p-8 flex flex-col justify-center items-center overflow-x-auto">
-        {viewMode === 'interactive-app' ? (
-          /* ========================================================= */
-          /* MODO INTERATIVO PRINCIPAL (UM ÚNICO MAPA E FLUXO NATURAL) */
-          /* ========================================================= */
-          <div className="flex flex-col items-center gap-4 w-full max-w-lg my-1">
-            {/* Quick Flow Direct Jump Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 bg-[#14161C] p-1.5 rounded-2xl border border-white/10 max-w-full">
-              <button
-                onClick={() => setCurrentScreen('map-dashboard')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'map-dashboard'
-                    ? 'bg-[#00E676] text-black shadow-[0_0_10px_rgba(0,230,118,0.3)]'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Map className="w-3 h-3" />
-                <span>Mapa</span>
-              </button>
-
-              <button
-                onClick={() => setCurrentScreen('gig-offer-bottom-sheet')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'gig-offer-bottom-sheet'
-                    ? 'bg-[#00E676] text-black shadow-[0_0_10px_rgba(0,230,118,0.3)]'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Oferta</span>
-              </button>
-
-              <button
-                onClick={() => setCurrentScreen('active-gig-screen')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'active-gig-screen'
-                    ? 'bg-[#00E676] text-black shadow-[0_0_10px_rgba(0,230,118,0.3)]'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Navigation className="w-3 h-3" />
-                <span>Em Andamento</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setCurrentScreen('profile-screen');
-                  setActiveNavTab('profile');
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'profile-screen'
-                    ? 'bg-[#00E676] text-black shadow-[0_0_10px_rgba(0,230,118,0.3)]'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <User className="w-3 h-3" />
-                <span>Perfil</span>
-              </button>
-
-              <button
-                onClick={() => setCurrentScreen('settings-screen')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'settings-screen'
-                    ? 'bg-[#00E676] text-black shadow-[0_0_10px_rgba(0,230,118,0.3)]'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Sliders className="w-3 h-3" />
-                <span>Config</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsLoggedIn(false);
-                  setCurrentScreen('login-screen');
-                }}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  currentScreen === 'login-screen' || currentScreen === 'cadastro-screen'
-                    ? 'bg-[#00E676] text-black'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                <ArrowLeft className="w-3 h-3" />
-                <span>Auth</span>
-              </button>
+            <div className="w-8 h-8 rounded-xl bg-[#00E676] text-black font-black flex items-center justify-center text-sm shadow-[0_0_15px_rgba(0,230,118,0.5)]">
+              T
             </div>
-
-            {/* Mobile Device Container */}
-            <MobileFrame title={currentScreen}>
-              <div className="relative w-full h-full flex flex-col overflow-hidden">
-                {/* 1. Tela de Login */}
-                {currentScreen === 'login-screen' && (
-                  <LoginScreen
-                    onNavigateToCadastro={() => setCurrentScreen('cadastro-screen')}
-                    onLoginSuccess={handleLoginSuccess}
-                  />
-                )}
-
-                {/* 2. Tela de Cadastro */}
-                {currentScreen === 'cadastro-screen' && (
-                  <CadastroScreen
-                    onNavigateToLogin={() => setCurrentScreen('login-screen')}
-                    onCadastroSuccess={handleLoginSuccess}
-                  />
-                )}
-
-                {/* 3. Mapa Principal (Único Mapa) */}
-                {currentScreen === 'map-dashboard' && (
-                  <MapDashboardScreen
-                    gigs={filteredGigs}
-                    selectedGigId={selectedGig.id}
-                    onSelectGig={handleSelectGig}
-                    isOnline={isOnline}
-                    onToggleOnline={() => {
-                      setIsOnline(!isOnline);
-                      showToast(!isOnline ? '🟢 Você agora está ONLINE!' : '🔴 Você está OFFLINE');
-                    }}
-                    onOpenProfile={() => {
-                      setCurrentScreen('profile-screen');
-                      setActiveNavTab('profile');
-                    }}
-                    onOpenEarnings={() => {
-                      setCurrentScreen('profile-screen');
-                      setActiveNavTab('earnings');
-                    }}
-                    hasBottomNav={true}
-                  />
-                )}
-
-                {/* 4. Detalhes da Oferta (Bottom Sheet sobre o mapa) */}
-                {currentScreen === 'gig-offer-bottom-sheet' && (
-                  <GigOfferBottomSheet
-                    gig={selectedGig}
-                    allGigs={filteredGigs}
-                    onAccept={handleAcceptGig}
-                    onDecline={handleDeclineGig}
-                    onClose={() => setCurrentScreen('map-dashboard')}
-                  />
-                )}
-
-                {/* 5. Serviço em Andamento */}
-                {currentScreen === 'active-gig-screen' && (
-                  <ActiveGigScreen
-                    gig={activeShiftGig || selectedGig}
-                    onFinishShift={handleFinishShift}
-                    onOpenNavigation={() => {
-                      showToast('Iniciando GPS no Waze / Google Maps...');
-                    }}
-                    onCancelGig={handleCancelShift}
-                  />
-                )}
-
-                {/* 6. Perfil */}
-                {currentScreen === 'profile-screen' && (
-                  <ProfileScreen
-                    onOpenSettings={() => setCurrentScreen('settings-screen')}
-                    onLogout={handleLogout}
-                    onViewHistory={() => showToast('84 repasses realizados via PIX com sucesso.')}
-                    onHelpCenter={() => showToast('Suporte 24h Trampo CWB: WhatsApp (41) 98888-0000')}
-                  />
-                )}
-
-                {/* 7. Configurações */}
-                {currentScreen === 'settings-screen' && (
-                  <SettingsScreen
-                    onBack={() => setCurrentScreen('profile-screen')}
-                    onSave={(newSettings) => {
-                      setUserSettings(newSettings);
-                      showToast(
-                        `Preferências atualizadas! Raio: ${newSettings.maxDistanceKm}km | Bartender: ${
-                          newSettings.bartenderActive ? 'ON' : 'OFF'
-                        } | Garçom: ${newSettings.garcomActive ? 'ON' : 'OFF'}`
-                      );
-                    }}
-                  />
-                )}
-
-                {/* Barra de Navegação Inferior integrada quando aplicável */}
-                {showBottomNav && (
-                  <BottomNavigation
-                    activeTab={activeNavTab}
-                    onTabChange={handleNavTabChange}
-                    className="absolute"
-                  />
-                )}
-              </div>
-            </MobileFrame>
-
-            {/* Quick Helper Instructions */}
-            <div className="flex items-center justify-between w-full max-w-sm px-2 text-xs text-zinc-400">
-              <span>💡 Toque nos marcadores do mapa para interagir</span>
-              <button
-                onClick={() => {
-                  setIsLoggedIn(true);
-                  setIsOnline(true);
-                  setSelectedGig(mockGigs[0]);
-                  setActiveShiftGig(null);
-                  setCurrentScreen('map-dashboard');
-                  setActiveNavTab('map');
-                  showToast('Fluxo reiniciado no Mapa!');
-                }}
-                className="flex items-center gap-1 text-zinc-400 hover:text-[#00E676] cursor-pointer"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reiniciar</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* ========================================================= */
-          /* MODO PANORÂMICO: VISÃO CONJUNTA DAS TELAS (SEM DUPLICATAS) */
-          /* ========================================================= */
-          <div className="w-full max-w-[1600px] mx-auto">
-            <div className="flex flex-col mb-6 text-left">
-              <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                <span>Catálogo Completo das Interfaces do Trampo CWB</span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30">
-                  Sem mapas duplicados • 100% Interconectado
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold tracking-wider text-base text-white">TRAMPO</span>
+                <span className="text-[10px] font-black uppercase bg-[#00E676]/15 text-[#00E676] px-1.5 py-0.5 rounded border border-[#00E676]/30">
+                  CWB
                 </span>
-              </h2>
-              <p className="text-xs text-zinc-400 mt-1">
-                Todas as telas estão conectadas. Você pode interagir em qualquer uma delas ou alternar para o <strong>App Interativo Único</strong>.
+              </div>
+              <p className="hidden sm:block text-[10px] text-zinc-400">
+                Plataforma de Turnos para Restaurantes
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 pb-8 justify-items-center">
-              {/* 1. MAPA PRINCIPAL COM BOTTOM NAVIGATION */}
-              <MobileFrame title="1. Mapa Principal + Nav">
-                <div className="relative w-full h-full">
-                  <MapDashboardScreen
-                    gigs={filteredGigs}
-                    selectedGigId={selectedGig.id}
-                    onSelectGig={(gig) => {
-                      setSelectedGig(gig);
-                      setViewMode('interactive-app');
-                      setCurrentScreen('gig-offer-bottom-sheet');
-                    }}
-                    isOnline={isOnline}
-                    onToggleOnline={() => setIsOnline(!isOnline)}
-                    onOpenProfile={() => {
-                      setViewMode('interactive-app');
-                      setCurrentScreen('profile-screen');
-                    }}
-                    hasBottomNav={true}
-                  />
-                  <BottomNavigation
-                    activeTab={activeNavTab}
-                    onTabChange={(tab) => {
-                      setActiveNavTab(tab);
-                      if (tab === 'profile' || tab === 'earnings') {
-                        setViewMode('interactive-app');
-                        setCurrentScreen('profile-screen');
-                      }
-                    }}
-                    className="absolute"
-                  />
-                </div>
-              </MobileFrame>
-
-              {/* 2. OFERTA / BOTTOM SHEET */}
-              <MobileFrame title="2. Detalhes da Oferta">
-                <GigOfferBottomSheet
-                  gig={selectedGig}
-                  allGigs={filteredGigs}
-                  onAccept={(gig) => {
-                    handleAcceptGig(gig);
-                    setViewMode('interactive-app');
-                  }}
-                  onDecline={handleDeclineGig}
-                  onClose={() => {
-                    setViewMode('interactive-app');
-                    setCurrentScreen('map-dashboard');
-                  }}
-                />
-              </MobileFrame>
-
-              {/* 3. TURNO EM ANDAMENTO */}
-              <MobileFrame title="3. Turno em Andamento">
-                <ActiveGigScreen
-                  gig={activeShiftGig || selectedGig}
-                  onFinishShift={(gig) => {
-                    handleFinishShift(gig);
-                    setViewMode('interactive-app');
-                  }}
-                  onOpenNavigation={() => showToast('Abrindo GPS no Waze...')}
-                  onCancelGig={handleCancelShift}
-                />
-              </MobileFrame>
-
-              {/* 4. PERFIL DO FREELANCER */}
-              <MobileFrame title="4. Perfil">
-                <div className="relative w-full h-full">
-                  <ProfileScreen
-                    onOpenSettings={() => {
-                      setViewMode('interactive-app');
-                      setCurrentScreen('settings-screen');
-                    }}
-                    onLogout={handleLogout}
-                    onViewHistory={() => showToast('Histórico: 84 repasses via PIX')}
-                    onHelpCenter={() => showToast('Suporte aberto')}
-                  />
-                  <BottomNavigation
-                    activeTab="profile"
-                    onTabChange={handleNavTabChange}
-                    className="absolute"
-                  />
-                </div>
-              </MobileFrame>
-
-              {/* 5. CONFIGURAÇÕES */}
-              <MobileFrame title="5. Configurações">
-                <SettingsScreen
-                  onBack={() => {
-                    setViewMode('interactive-app');
-                    setCurrentScreen('profile-screen');
-                  }}
-                  onSave={(newSettings) => {
-                    setUserSettings(newSettings);
-                    showToast(`Raio atualizado para ${newSettings.maxDistanceKm} km!`);
-                  }}
-                />
-              </MobileFrame>
-            </div>
           </div>
+        </div>
+
+        {/* Center: Desktop Top Navigation Links (visible when logged in) */}
+        {isLoggedIn && (
+          <nav className="hidden md:flex items-center gap-1 bg-[#181a20] p-1 rounded-2xl border border-white/5">
+            <button
+              onClick={() => {
+                if (activeShiftGig) {
+                  setCurrentScreen('active-gig-screen');
+                } else {
+                  setCurrentScreen('map-dashboard');
+                }
+                setActiveNavTab('map');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                (currentScreen === 'map-dashboard' || currentScreen === 'active-gig-screen')
+                  ? 'bg-[#00E676] text-black shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Map className="w-4 h-4" />
+              <span>Mapa de Vagas</span>
+              {activeShiftGig && (
+                <span className="w-2 h-2 rounded-full bg-black animate-ping" />
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('earnings-screen');
+                setActiveNavTab('earnings');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                currentScreen === 'earnings-screen'
+                  ? 'bg-[#00E676] text-black shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Wallet className="w-4 h-4" />
+              <span>Ganhos</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setCurrentScreen('profile-screen');
+                setActiveNavTab('profile');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                currentScreen === 'profile-screen'
+                  ? 'bg-[#00E676] text-black shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <User className="w-4 h-4" />
+              <span>Meu Perfil</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentScreen('settings-screen')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                currentScreen === 'settings-screen'
+                  ? 'bg-[#00E676] text-black shadow-sm'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Configurações</span>
+            </button>
+          </nav>
+        )}
+
+        {/* Right: Actions, Online Status & User Profile Widget */}
+        <div className="flex items-center gap-3">
+          {/* Turno em andamento indicator badge */}
+          {activeShiftGig && currentScreen !== 'active-gig-screen' && (
+            <button
+              onClick={() => setCurrentScreen('active-gig-screen')}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#00E676]/15 border border-[#00E676]/40 text-[#00E676] text-xs font-bold animate-pulse cursor-pointer"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Turno Ativo no {activeShiftGig.venueName}</span>
+            </button>
+          )}
+
+          {isLoggedIn ? (
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Online/Offline status pill */}
+              <button
+                onClick={() => setIsOnline(!isOnline)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+                  isOnline
+                    ? 'bg-[#00E676]/10 text-[#00E676] border-[#00E676]/30'
+                    : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-[#00E676]' : 'bg-red-500'}`} />
+                <span className="hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
+              </button>
+
+              {/* User Avatar dropdown / profile trigger */}
+              <div 
+                onClick={() => setCurrentScreen('profile-screen')}
+                className="flex items-center gap-2 pl-1 cursor-pointer group"
+                title="Ver e Editar Perfil"
+              >
+                <img
+                  src={userProfile.avatarUrl}
+                  alt={userProfile.name}
+                  className="w-9 h-9 rounded-full object-cover border-2 border-[#00E676] transition-transform group-hover:scale-105"
+                />
+              </div>
+
+              {/* Logout button */}
+              <button
+                onClick={handleLogout}
+                title="Sair da Conta"
+                className="hidden sm:flex p-2 rounded-xl text-zinc-400 hover:text-red-400 hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentScreen('login-screen')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  currentScreen === 'login-screen' ? 'bg-[#00E676] text-black font-extrabold shadow-sm' : 'text-zinc-300 hover:text-white'
+                }`}
+              >
+                Entrar
+              </button>
+              <button
+                onClick={() => setCurrentScreen('cadastro-screen')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  currentScreen === 'cadastro-screen' ? 'bg-[#00E676] text-black font-extrabold shadow-sm' : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                Cadastrar
+              </button>
+            </div>
+          )}
+
+          {/* View Code Modal Button */}
+          <button
+            onClick={() => setIsCodeModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1B1E26] hover:bg-[#252934] border border-white/10 text-xs font-semibold text-zinc-200 transition-colors cursor-pointer"
+          >
+            <Code className="w-3.5 h-3.5 text-[#00E676]" />
+            <span className="hidden sm:inline">Código</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ======================================================== */}
+      {/* MAIN VIEWPORT - FULLPAGE RESPONSIVE VIEWS               */}
+      {/* ======================================================== */}
+      <main className="flex-1 w-full flex flex-col relative overflow-hidden">
+        {/* 1. Login Screen */}
+        {currentScreen === 'login-screen' && (
+          <LoginScreen
+            onNavigateToCadastro={() => setCurrentScreen('cadastro-screen')}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        )}
+
+        {/* 2. Cadastro Screen */}
+        {currentScreen === 'cadastro-screen' && (
+          <CadastroScreen
+            onNavigateToLogin={() => setCurrentScreen('login-screen')}
+            onCadastroSuccess={handleLoginSuccess}
+          />
+        )}
+
+        {/* 3. Mapa Principal (Desktop Sidebar + Full Interactive Map no tema escuro) */}
+        {currentScreen === 'map-dashboard' && (
+          <MapDashboardScreen
+            gigs={filteredGigs}
+            selectedGigId={selectedGig.id}
+            onSelectGig={handleSelectGig}
+            isOnline={isOnline}
+            onToggleOnline={() => setIsOnline(!isOnline)}
+            onOpenProfile={() => {
+              setCurrentScreen('profile-screen');
+              setActiveNavTab('profile');
+            }}
+            onOpenEarnings={() => {
+              setCurrentScreen('earnings-screen');
+              setActiveNavTab('earnings');
+            }}
+          />
+        )}
+
+        {/* 4. Active Gig Screen (Turno em andamento com rota real Google Maps) */}
+        {currentScreen === 'active-gig-screen' && (
+          <ActiveGigScreen
+            gig={activeShiftGig || selectedGig}
+            onFinishShift={handleFinishShift}
+            onCancelGig={handleCancelShift}
+            onBackToDashboard={() => setCurrentScreen('map-dashboard')}
+          />
+        )}
+
+        {/* 5. Ganhos Screen */}
+        {currentScreen === 'earnings-screen' && (
+          <EarningsScreen
+            onBackToMap={() => {
+              setCurrentScreen('map-dashboard');
+              setActiveNavTab('map');
+            }}
+          />
+        )}
+
+        {/* 6. Perfil Screen */}
+        {currentScreen === 'profile-screen' && (
+          <ProfileScreen
+            userProfile={userProfile}
+            onUpdateProfile={(updated: UserProfileData) => setUserProfile(updated)}
+            onLogout={handleLogout}
+            onOpenSettings={() => setCurrentScreen('settings-screen')}
+          />
+        )}
+
+        {/* 7. Configurações Screen */}
+        {currentScreen === 'settings-screen' && (
+          <SettingsScreen
+            onBack={() => {
+              setCurrentScreen('map-dashboard');
+              setActiveNavTab('map');
+            }}
+            onSave={(updated) => setUserSettings(updated)}
+          />
         )}
       </main>
+
+      {/* Modal / Bottom Sheet da Oferta (Abre quando seleciona vaga no mapa) */}
+      {isOfferModalOpen && (
+        <GigOfferBottomSheet
+          gig={selectedGig}
+          onAccept={handleAcceptGig}
+          onDecline={handleDeclineGig}
+          onClose={() => setIsOfferModalOpen(false)}
+        />
+      )}
+
+      {/* Bottom Navigation para Mobile/Tablet (Mapa, Ganhos, Perfil) */}
+      {isLoggedIn && (
+        currentScreen === 'map-dashboard' || 
+        currentScreen === 'earnings-screen' || 
+        currentScreen === 'profile-screen'
+      ) && (
+        <BottomNavigation
+          activeTab={activeNavTab}
+          onTabChange={handleNavTabChange}
+        />
+      )}
 
       {/* Code Viewer Modal */}
       <CodeViewerModal

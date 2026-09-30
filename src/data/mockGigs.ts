@@ -6,7 +6,7 @@ export const mockGigs: GigOffer[] = [
     profession: 'Bartender',
     venueName: 'Boteco São Jorge',
     rating: 4.9,
-    neighborhood: 'Vila Madalena',
+    neighborhood: 'Batel Soho',
     distance: '1.8 km de você',
     rate: 220,
     rateFormatted: 'R$ 220,00',
@@ -21,6 +21,10 @@ export const mockGigs: GigOffer[] = [
       x: 48,
       y: 31,
     },
+    latLng: {
+      lat: -25.4398,
+      lng: -49.2885, // Praça da Espanha, Batel, Curitiba
+    },
     active: true,
   },
   {
@@ -28,7 +32,7 @@ export const mockGigs: GigOffer[] = [
     profession: 'Garçom',
     venueName: 'Bistrô do Batel',
     rating: 4.8,
-    neighborhood: 'Batel Soho',
+    neighborhood: 'Batel',
     distance: '2.4 km de você',
     rate: 180,
     rateFormatted: 'R$ 180,00',
@@ -43,6 +47,10 @@ export const mockGigs: GigOffer[] = [
       x: 72,
       y: 42,
     },
+    latLng: {
+      lat: -25.4452,
+      lng: -49.2941, // Av. Batel, Curitiba
+    },
     active: true,
   },
   {
@@ -50,7 +58,7 @@ export const mockGigs: GigOffer[] = [
     profession: 'Garçom',
     venueName: 'Choperia Avenida',
     rating: 4.7,
-    neighborhood: 'Consolação',
+    neighborhood: 'Centro Cívico',
     distance: '3.1 km de você',
     rate: 190,
     rateFormatted: 'R$ 190,00',
@@ -58,12 +66,16 @@ export const mockGigs: GigOffer[] = [
     shiftDuration: '6 horas de turno',
     microtraining: {
       title: 'SPECKIT MICROTRAINING',
-      rulesTitle: 'Normas de Higiene & Salão',
-      description: 'Uniforme escuro alinhado. Conhecimento em comandas eletrônicas para aceleração de pedidos.',
+      rulesTitle: 'Agilidade de Chopp',
+      description: 'Retirada rápida de copos vazios e abastecimento de chopeiras artesanais.',
     },
     coords: {
-      x: 34,
-      y: 58,
+      x: 35,
+      y: 65,
+    },
+    latLng: {
+      lat: -25.4223,
+      lng: -49.2668, // Centro Cívico / Museu Oscar Niemeyer
     },
     active: true,
   },
@@ -71,21 +83,25 @@ export const mockGigs: GigOffer[] = [
     id: 'gig-4',
     profession: 'Bartender',
     venueName: 'Lounge Bar & Drinks',
-    rating: 5.0,
-    neighborhood: 'Jardins',
-    distance: '4.0 km de você',
+    rating: 4.9,
+    neighborhood: 'Água Verde',
+    distance: '4.2 km de você',
     rate: 250,
     rateFormatted: 'R$ 250,00',
     shiftTime: '20:00 - 03:00',
     shiftDuration: '7 horas de turno',
     microtraining: {
       title: 'SPECKIT MICROTRAINING',
-      rulesTitle: 'Coquetelaria Clássica',
-      description: 'Domínio em coqueteis clássicos (Negroni, Old Fashioned, Gin Tônica). Agilidade em picos de movimento.',
+      rulesTitle: 'Coquetelaria Autoral',
+      description: 'Experiência em coquetelaria clássica (Negroni, Old Fashioned, Gin Tônica) e velocidade.',
     },
     coords: {
-      x: 78,
-      y: 65,
+      x: 60,
+      y: 78,
+    },
+    latLng: {
+      lat: -25.4519,
+      lng: -49.2801, // Água Verde / Av. República Argentina
     },
     active: true,
   },
