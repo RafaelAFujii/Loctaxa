@@ -8,6 +8,8 @@ import {
   Navigation,
   LogOut
 } from 'lucide-react';
+import { APIProvider } from '@vis.gl/react-google-maps';
+import { GOOGLE_MAPS_API_KEY } from './constants/maps';
 import { LoginScreen } from './screens/LoginScreen';
 import { CadastroScreen } from './screens/CadastroScreen';
 import { MapDashboardScreen } from './screens/MapDashboardScreen';
@@ -117,7 +119,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col font-sans selection:bg-[#00E676] selection:text-black">
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['marker', 'routes']}>
+      <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col font-sans selection:bg-[#00E676] selection:text-black">
       {/* ======================================================== */}
       {/* DESKTOP & MOBILE RESPONSIVE HEADER BAR                  */}
       {/* ======================================================== */}
@@ -405,5 +408,6 @@ export default function App() {
         onClose={() => setIsCodeModalOpen(false)}
       />
     </div>
+    </APIProvider>
   );
 }

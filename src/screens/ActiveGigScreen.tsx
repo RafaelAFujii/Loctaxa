@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  APIProvider,
   Map,
   useMapsLibrary,
   useMap,
@@ -269,21 +268,19 @@ export const ActiveGigScreen: React.FC<ActiveGigScreenProps> = ({
 
               <div className="relative rounded-2xl overflow-hidden border border-white/10 h-72 w-full bg-[#0c0f14]">
                 {apiKey ? (
-                  <APIProvider apiKey={apiKey}>
-                    <Map
-                      mapId="DEMO_MAP_ID"
-                      colorScheme={ColorScheme.DARK}
-                      defaultCenter={gigLocation}
-                      defaultZoom={14}
-                      gestureHandling="greedy"
-                      disableDefaultUI={true}
-                      styles={darkMapStyles}
-                      className="w-full h-full"
-                      style={{ width: '100%', height: '100%' }}
-                    >
-                      <RealRouteRenderer destination={gigLocation} />
-                    </Map>
-                  </APIProvider>
+                  <Map
+                    id="active-gig-map"
+                    mapId="DEMO_MAP_ID"
+                    colorScheme={ColorScheme.DARK}
+                    defaultCenter={gigLocation}
+                    defaultZoom={14}
+                    gestureHandling="greedy"
+                    disableDefaultUI={true}
+                    className="w-full h-full"
+                    style={{ width: '100%', height: '100%' }}
+                  >
+                    <RealRouteRenderer destination={gigLocation} />
+                  </Map>
                 ) : (
                   /* Fallback SVG */
                   <svg className="w-full h-full opacity-60" viewBox="0 0 400 240">
